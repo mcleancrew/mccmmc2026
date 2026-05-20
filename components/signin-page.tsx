@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff } from "lucide-react"
 import { AuthSiteInfoCard } from "@/components/auth-site-info-card"
+import { AuthPageHeader } from "@/components/auth-page-header"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { sendPasswordResetEmail } from "firebase/auth"
@@ -137,16 +138,7 @@ export default function SigninPage() {
   return (
     <div className={authPageShellClass}>
       <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <img
-            src="/images/mclean-crew-logo.png"
-            alt="McLean Crew Logo"
-            className="h-32 w-32 object-contain mx-auto mb-4"
-          />
-          <h1 className="text-3xl font-bold text-brand">Mclean Crew Club <br/> Million Meters Challenge  </h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">Developed and maintained by Adrian Wiklund</p>
-        </div>
+        <AuthPageHeader />
 
         <AuthSiteInfoCard />
 

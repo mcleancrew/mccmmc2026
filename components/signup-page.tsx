@@ -8,10 +8,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 import { Eye } from "lucide-react"
 import { AuthSiteInfoCard } from "@/components/auth-site-info-card"
+import { AuthPageHeader } from "@/components/auth-page-header"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { authPageShellClass } from "@/lib/auth-page-styles"
@@ -25,6 +27,7 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
+    team: "" as "" | "M" | "F",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -80,8 +83,18 @@ export default function SignupPage() {
       return
     }
 
+    if (!formData.team) {
+      toast({
+        title: "Team required",
+        description: "Please select boys team or girls team.",
+        variant: "destructive",
+      })
+      setIsSubmitting(false)
+      return
+    }
+
     try {
-      await signUp(formData.name, formData.email, formData.password)
+      await signUp(formData.name, formData.email, formData.password, formData.team)
       toast({
         title: "Account created!",
         description: "You can now submit workouts and track your progress!",
@@ -121,16 +134,7 @@ export default function SignupPage() {
   return (
     <div className={authPageShellClass}>
       <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <img
-            src="/images/mclean-crew-logo.png"
-            alt="McLean Crew Logo"
-            className="h-32 w-32 object-contain mx-auto mb-4"
-          />
-          <h1 className="text-3xl font-bold text-brand">Mclean Crew Club <br/> Million Meters Challenge</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">Developed and maintained by Adrian Wiklund</p>
-        </div>
+        <AuthPageHeader />
 
         <AuthSiteInfoCard />
 
@@ -157,6 +161,25 @@ export default function SignupPage() {
                   onChange={handleInputChange}
                   required
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="team">Team</Label>
+                <Select
+                  value={formData.team || undefined}
+                  onValueChange={(value: "M" | "F") =>
+                    setFormData((prev) => ({ ...prev, team: value }))
+                  }
+                  required
+                >
+                  <SelectTrigger id="team">
+                    <SelectValue placeholder="Select your team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M">Boys team</SelectItem>
+                    <SelectItem value="F">Girls team</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

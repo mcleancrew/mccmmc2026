@@ -27,7 +27,7 @@ interface AuthContextType {
   isGuest: boolean
   isAuthenticated: boolean
   isLoading: boolean
-  signUp: (name: string, email: string, password: string) => Promise<void>
+  signUp: (name: string, email: string, password: string, gender: "M" | "F") => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => void
   continueAsGuest: () => void
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe()
   }, [])
 
-  const signUp = async (name: string, email: string, password: string) => {
+  const signUp = async (name: string, email: string, password: string, gender: "M" | "F") => {
     try {
       // Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
@@ -96,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await setDoc(doc(db, "users", firebaseUser.uid), {
         username: name,
         email: email,
+        Gender: gender,
         activities: [],
         createdAt: new Date()
       })
