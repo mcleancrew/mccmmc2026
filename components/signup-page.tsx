@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { Eye, Users, Trophy, Upload } from "lucide-react"
+import { Eye } from "lucide-react"
+import { AuthSiteInfoCard } from "@/components/auth-site-info-card"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { authPageShellClass } from "@/lib/auth-page-styles"
@@ -127,9 +128,11 @@ export default function SignupPage() {
             alt="McLean Crew Logo"
             className="h-32 w-32 object-contain mx-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-brand">Million Meters</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">Join the rowing challenge</p>
+          <h1 className="text-3xl font-bold text-brand">Mclean Crew Club <br/> Million Meters Challenge</h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-2">Developed and maintained by Adrian Wiklund</p>
         </div>
+
+        <AuthSiteInfoCard />
 
         <Card>
           <CardHeader>
@@ -209,32 +212,10 @@ export default function SignupPage() {
 
               <Button type="button" variant="outline" className="w-full bg-transparent" onClick={handleGuestAccess}>
                 <Eye className="mr-2 h-4 w-4" />
-                Continue as Guest
+                View leaderboard as Guest
               </Button>
             </CardFooter>
           </form>
-        </Card>
-
-        {/* Guest Features Info */}
-        <Card className="mt-4 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-          <CardContent className="pt-4">
-            <h3 className="font-semibold text-sm mb-3 text-slate-700 dark:text-slate-300">As a guest, you can:</h3>
-            <div className="space-y-2">
-              <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                <Users className="h-4 w-4 mr-2 text-green-600" />
-                View team progress and dashboard
-              </div>
-              <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                <Trophy className="h-4 w-4 mr-2 text-green-600" />
-                Browse the leaderboard
-              </div>
-              <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                <Upload className="h-4 w-4 mr-2 text-slate-400" />
-                <span className="line-through">Submit workouts</span>
-                <span className="ml-2 text-xs">(Sign up required)</span>
-              </div>
-            </div>
-          </CardContent>
         </Card>
 
         <p className="text-center text-xs text-slate-500 mt-6">
