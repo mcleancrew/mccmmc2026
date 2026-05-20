@@ -320,6 +320,22 @@ const getBadgeName = (badgeId: string): string => {
   return badgeNames[badgeId] || badgeId
 }
 
+const allowsDecimalDistance = (type: WorkoutType) => type === "run" || type === "bike"
+
+const isValidDistanceInput = (value: string, type: WorkoutType): boolean => {
+  if (!value.trim()) return false
+  const num = Number(value)
+  if (!Number.isFinite(num) || num <= 0) return false
+  if (allowsDecimalDistance(type)) return true
+  return Number.isInteger(num)
+}
+
+const isValidDistanceChange = (value: string, type: WorkoutType): boolean => {
+  if (value === "") return true
+  if (allowsDecimalDistance(type)) return /^\d*\.?\d*$/.test(value)
+  return /^\d+$/.test(value)
+}
+
 export default function WorkoutSubmission() {
   const { toast } = useToast()
   const { user } = useAuth()
@@ -399,10 +415,12 @@ export default function WorkoutSubmission() {
       return
     }
 
-    if (!distance || Number.parseFloat(distance) <= 0) {
+    if (!isValidDistanceInput(distance, selectedWorkoutType)) {
       toast({
         title: "Invalid distance",
-        description: "Please enter a valid distance",
+        description: allowsDecimalDistance(selectedWorkoutType)
+          ? "Enter a distance greater than zero (miles can use decimals)."
+          : "Enter a whole number greater than zero (no decimals).",
         variant: "destructive",
       })
       return
@@ -543,7 +561,7 @@ export default function WorkoutSubmission() {
       case "swim":
         return Math.round((distanceNum / 300) * 1000)
       case "run":
-        return distanceNum * 1000 // 1 mile = 1000m
+        return Math.round(distanceNum * 1000) // 1 mile = 1000m
       case "bike":
         return Math.round((distanceNum / 2) * 1000) // 2 miles = 1000m
       case "lift":
@@ -580,6 +598,7 @@ export default function WorkoutSubmission() {
                     isSelected={selectedWorkoutType === type.id}
                     onSelect={() => {
                       setSelectedWorkoutType(type.id)
+                      setDistance("")
                       if (type.id !== "otw") {
                         setBoatType("1x") // Reset to default when switching away from OTW
                       }
@@ -632,11 +651,22 @@ export default function WorkoutSubmission() {
                 <Input
                   id="distance"
                   type="number"
-                  step="0.01"
-                  min="0"
-                  placeholder={selectedWorkoutType === "lift" ? "e.g., 1" : "e.g., 2000"}
+                  step="1"
+                  min={allowsDecimalDistance(selectedWorkoutType) ? "0.01" : "1"}
+                  placeholder={
+                    selectedWorkoutType === "lift"
+                      ? "e.g., 1"
+                      : allowsDecimalDistance(selectedWorkoutType)
+                        ? "e.g., 3.5"
+                        : "e.g., 2000"
+                  }
                   value={distance}
-                  onChange={(e) => setDistance(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    if (isValidDistanceChange(value, selectedWorkoutType)) {
+                      setDistance(value)
+                    }
+                  }}
                   required
                   className="flex-1"
                 />

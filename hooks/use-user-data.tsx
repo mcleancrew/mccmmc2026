@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase"
 import { useAuth } from "@/hooks/use-auth"
 import type { UserData, Workout, WorkoutType } from "@/lib/types"
 import { getCurrentDateEST, convertToEST } from "@/lib/badge-calculations"
+import { getDaysLeft } from "@/lib/challenge-config"
 
 interface ProgressDataPoint {
   date: string
@@ -53,9 +54,10 @@ export function useUserData(userId?: string, workoutType?: string) {
         const deficit = Math.max(0, 1000000 - totalMeters)
 
         // Calculate daily requirements
-        const daysLeft = 70 // You can make this dynamic based on challenge end date
-        const dailyRequired = Math.ceil(deficit / daysLeft)
-        const dailyRequiredWithRest = Math.ceil(deficit / (daysLeft * 6/7)) // With 1 rest day per week (6 active days out of 7)
+        const daysLeft = getDaysLeft()
+        const dailyRequired = daysLeft > 0 ? Math.ceil(deficit / daysLeft) : deficit
+        const dailyRequiredWithRest =
+          daysLeft > 0 ? Math.ceil(deficit / (daysLeft * 6 / 7)) : deficit
 
         // Calculate workout streak
         const calculateStreak = (activities: any[]): number => {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { collection, getDocs } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { getCurrentDateEST, convertToEST } from "@/lib/badge-calculations"
+import { getDaysLeft } from "@/lib/challenge-config"
 import type { UserData } from "@/lib/types"
 
 // Helper function to normalize activity names for filtering
@@ -67,9 +68,10 @@ export function useLeaderboardData() {
           const deficit = Math.max(0, 1000000 - totalMeters)
 
           // Calculate daily requirements
-          const daysLeft = 70 // You can make this dynamic based on challenge end date
-          const dailyRequired = Math.ceil(deficit / daysLeft)
-          const dailyRequiredWithRest = Math.ceil((deficit / daysLeft) * 1.17) // With 1 rest day per week
+          const daysLeft = getDaysLeft()
+          const dailyRequired = daysLeft > 0 ? Math.ceil(deficit / daysLeft) : deficit
+          const dailyRequiredWithRest =
+            daysLeft > 0 ? Math.ceil((deficit / daysLeft) * 1.17) : deficit
 
           // Calculate daily and weekly meters
           const now = new Date()
