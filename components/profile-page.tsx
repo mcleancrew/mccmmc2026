@@ -21,6 +21,7 @@ import { useBadgeData } from "@/hooks/use-badge-data"
 import Link from "next/link"
 import { doc, updateDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
+import { isImageFile, readFileAsDataUrl, uploadProfileImage } from "@/lib/profile-image-upload"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
@@ -32,7 +33,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
   const [selectedUserId, setSelectedUserId] = useState(userId || "current-user")
   const [selectedWorkoutType, setSelectedWorkoutType] = useState<string>("all")
   const { leaderboardData } = useLeaderboardData()
-  const { userData } = useUserData(selectedUserId === "current-user" ? undefined : selectedUserId)
+  const { userData, refetchUserData } = useUserData(selectedUserId === "current-user" ? undefined : selectedUserId)
   const { user, signOut } = useAuth()
   const [metersPerDay, setMetersPerDay] = useState("5000")
   const [calculatedDays, setCalculatedDays] = useState<number | null>(null)
@@ -43,6 +44,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [showPreviewModal, setShowPreviewModal] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [localProfileImage, setLocalProfileImage] = useState<string | null>(null)
 
   // Get the actual user ID for badge data
   const actualUserId = selectedUserId === "current-user" ? user?.id : selectedUserId
@@ -63,6 +65,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
   }
 
   const { name, profileImage, totalMeters, deficit, dailyRequired, dailyRequiredWithRest, workouts, dayStreak } = userData
+  const displayProfileImage = localProfileImage ?? profileImage
 
   const percentComplete = Math.min(100, (totalMeters / 1000000) * 100)
   const workoutCount = workouts.length
@@ -97,75 +100,80 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
   const isCurrentUser = selectedUserId === "current-user" || selectedUserId === user?.id
   const hasNoWorkouts = workoutCount === 0
 
-  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !user) return
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!isImageFile(file)) {
       toast({
         title: "Invalid file type",
-        description: "Please select an image file (JPEG, PNG, etc.)",
+        description: "Please select a photo (JPEG, PNG, HEIC, etc.)",
         variant: "destructive",
       })
+      if (fileInputRef.current) fileInputRef.current.value = ""
       return
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > 15 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Please select an image smaller than 5MB",
+        description: "Please choose a photo under 15MB",
         variant: "destructive",
       })
+      if (fileInputRef.current) fileInputRef.current.value = ""
       return
     }
 
-    // Show preview modal
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      setPreviewImage(e.target?.result as string)
-      setShowPreviewModal(true)
+    try {
+      const preview = await readFileAsDataUrl(file)
+      setPreviewImage(preview)
       setPendingFile(file)
+      setShowPreviewModal(true)
+    } catch {
+      toast({
+        title: "Could not load photo",
+        description: "Try choosing a different image from your library.",
+        variant: "destructive",
+      })
+      if (fileInputRef.current) fileInputRef.current.value = ""
     }
-    reader.readAsDataURL(file)
   }
 
   const handleAcceptProfilePicture = async () => {
-    if (!pendingFile || !user) return
+    if (!pendingFile || !user || isUploading) return
+
     setIsUploading(true)
     try {
-      // Convert file to base64 for storage
-      const reader = new FileReader()
-      reader.onload = async (e) => {
-        const base64String = e.target?.result as string
-        const userRef = doc(db, "users", user.id)
-        await updateDoc(userRef, {
-          profileImage: base64String
-        })
-        toast({
-          title: "Profile picture updated",
-          description: "Your profile picture has been successfully updated!",
-        })
-        window.location.reload()
-      }
-      reader.readAsDataURL(pendingFile)
+      const imageUrl = await uploadProfileImage(user.id, pendingFile)
+      await updateDoc(doc(db, "users", user.id), { profileImage: imageUrl })
+
+      setLocalProfileImage(imageUrl)
+      await refetchUserData()
+
+      toast({
+        title: "Profile picture updated",
+        description: "Your profile picture has been successfully updated!",
+      })
+
+      setShowPreviewModal(false)
+      setPreviewImage(null)
+      setPendingFile(null)
+      if (fileInputRef.current) fileInputRef.current.value = ""
     } catch (error) {
       console.error("Error uploading profile picture:", error)
       toast({
         title: "Upload failed",
-        description: "Failed to update profile picture. Please try again.",
+        description:
+          error instanceof Error ? error.message : "Failed to update profile picture. Please try again.",
         variant: "destructive",
       })
     } finally {
       setIsUploading(false)
-      setShowPreviewModal(false)
-      setPreviewImage(null)
-      setPendingFile(null)
     }
   }
 
   const handleCancelProfilePicture = () => {
+    if (isUploading) return
     setShowPreviewModal(false)
     setPreviewImage(null)
     setPendingFile(null)
@@ -203,7 +211,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
               {/* Glowing ring around avatar */}
               <div className="absolute inset-0 bg-gradient-to-r from-brand-muted to-purple-400 rounded-full blur-md opacity-30 animate-pulse"></div>
               <Avatar className="h-20 w-20 relative border-4 border-white/50 shadow-xl">
-                <AvatarImage src={profileImage || "/placeholder.svg"} alt={name} />
+                <AvatarImage key={displayProfileImage} src={displayProfileImage || "/placeholder.svg"} alt={name} />
                 <AvatarFallback className="bg-gradient-to-br from-brand-100 to-purple-100 text-brand-800 text-lg font-bold">
                   {name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
@@ -480,7 +488,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
                 onChange={handleProfilePictureUpload}
                 className="hidden"
               />
@@ -503,7 +511,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
       )}
 
       {/* Profile Picture Preview Modal */}
-      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+      <Dialog open={showPreviewModal} onOpenChange={(open) => { if (!open) handleCancelProfilePicture() }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Preview Profile Picture</DialogTitle>
@@ -532,7 +540,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
             <Button variant="outline" onClick={handleCancelProfilePicture} disabled={isUploading}>
               Cancel
             </Button>
-            <Button onClick={handleAcceptProfilePicture} disabled={isUploading}>
+            <Button type="button" onClick={handleAcceptProfilePicture} disabled={isUploading}>
               {isUploading ? "Uploading..." : "Accept"}
             </Button>
           </DialogFooter>

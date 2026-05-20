@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { doc, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/hooks/use-auth"
@@ -18,8 +18,7 @@ export function useUserData(userId?: string, workoutType?: string) {
   const [progressData, setProgressData] = useState<ProgressDataPoint[] | null>(null)
   const { user } = useAuth()
 
-  useEffect(() => {
-    const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
       try {
         let targetUserId = userId
 
@@ -242,10 +241,11 @@ export function useUserData(userId?: string, workoutType?: string) {
         console.error("Error fetching user data:", error)
         setUserData(null)
       }
-    }
-
-    fetchUserData()
   }, [userId, user, workoutType])
 
-  return { userData, progressData }
+  useEffect(() => {
+    fetchUserData()
+  }, [fetchUserData])
+
+  return { userData, progressData, refetchUserData: fetchUserData }
 }
