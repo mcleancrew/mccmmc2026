@@ -19,34 +19,8 @@ import { db, storage } from "@/lib/firebase"
 import { useRouter } from "next/navigation"
 import { calculateAllBadges, getCurrentDateEST, convertToEST } from "@/lib/badge-calculations"
 import { UserBadgeData } from "@/lib/types"
+import { cleanBadgeDataForFirestore } from "@/lib/user-badges"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-// Helper function to clean badge data for Firestore (remove undefined values)
-const cleanBadgeDataForFirestore = (badgeData: UserBadgeData): any => {
-  const cleanedBadges: { [key: string]: any } = {}
-  
-  Object.entries(badgeData.badges).forEach(([badgeId, badge]) => {
-    const cleanedBadge: any = {
-      earned: badge.earned,
-      progress: badge.progress,
-      maxProgress: badge.maxProgress,
-      lastUpdated: badge.lastUpdated
-    }
-    
-    // Only include earnedDate if it's not undefined
-    if (badge.earnedDate) {
-      cleanedBadge.earnedDate = badge.earnedDate
-    }
-    
-    cleanedBadges[badgeId] = cleanedBadge
-  })
-  
-  return {
-    userId: badgeData.userId,
-    badges: cleanedBadges,
-    lastCalculated: badgeData.lastCalculated
-  }
-}
 
 // Helper function to normalize activity type names
 const normalizeActivityType = (activityName: string): string => {
@@ -228,19 +202,14 @@ const updateUserBadges = async (userId: string, newWorkoutData: any) => {
     
     const userData = userSnap.data()
     const activities = userData.activities || []
-    
-    // Get current badge data to compare
-    const badgeRef = doc(db, 'badges', userId)
-    const badgeSnap = await getDoc(badgeRef)
-    const oldBadges = badgeSnap.exists() ? badgeSnap.data().badges || {} : {}
-    
+
     // Calculate required user data for badge calculations
     const totalMeters = activities.reduce((sum: number, activity: any) => {
       return sum + (Number(activity.points) || 0)
     }, 0)
-    
+
     const dayStreak = calculateDayStreak(activities)
-    
+
     // Create enhanced user data with calculated values
     const enhancedUserData = {
       id: userId,
@@ -253,9 +222,14 @@ const updateUserBadges = async (userId: string, newWorkoutData: any) => {
       deficit: Math.max(0, 1000000 - totalMeters),
       dailyRequired: 0,
       dailyRequiredWithRest: 0,
-      topWorkoutType: 'erg' as any,
-      workouts: []
+      topWorkoutType: "erg" as const,
+      workouts: [],
     }
+
+    // Get current badge data to compare
+    const badgeRef = doc(db, "badges", userId)
+    const badgeSnap = await getDoc(badgeRef)
+    const oldBadges = badgeSnap.exists() ? badgeSnap.data().badges || {} : {}
     
     // Calculate new badges
     const newBadges = calculateAllBadges(enhancedUserData, activities)
@@ -306,7 +280,6 @@ const updateUserBadges = async (userId: string, newWorkoutData: any) => {
     // Clean the data for Firestore
     const cleanedData = cleanBadgeDataForFirestore(badgeData)
 
-    // Save to Firestore
     await updateDoc(badgeRef, cleanedData)
     
     console.log("✅ Badges updated after workout submission")

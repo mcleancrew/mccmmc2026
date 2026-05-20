@@ -11,6 +11,10 @@ import {
 } from "firebase/auth"
 import { doc, setDoc, getDoc } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
+import {
+  createDefaultUserDataForBadges,
+  ensureUserBadgeDocument,
+} from "@/lib/user-badges"
 
 interface User {
   id: string
@@ -95,6 +99,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         activities: [],
         createdAt: new Date()
       })
+
+      await ensureUserBadgeDocument(
+        firebaseUser.uid,
+        createDefaultUserDataForBadges(firebaseUser.uid, name)
+      )
 
       // Optionally send email verification (but not required)
       // await sendEmailVerification(firebaseUser)

@@ -5,35 +5,9 @@ import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { UserBadgeData, BadgeProgress, BadgeId } from '@/lib/types'
 import { calculateAllBadges, isNewDay, getDateKey } from '@/lib/badge-calculations'
+import { cleanBadgeDataForFirestore, ensureUserBadgeDocument } from '@/lib/user-badges'
 import { useUserData } from './use-user-data'
 import { useToast } from './use-toast'
-
-// Helper function to clean badge data for Firestore (remove undefined values)
-const cleanBadgeDataForFirestore = (badgeData: UserBadgeData): any => {
-  const cleanedBadges: { [key: string]: any } = {}
-  
-  Object.entries(badgeData.badges).forEach(([badgeId, badge]) => {
-    const cleanedBadge: any = {
-      earned: badge.earned,
-      progress: badge.progress,
-      maxProgress: badge.maxProgress,
-      lastUpdated: badge.lastUpdated
-    }
-    
-    // Only include earnedDate if it's not undefined
-    if (badge.earnedDate) {
-      cleanedBadge.earnedDate = badge.earnedDate
-    }
-    
-    cleanedBadges[badgeId] = cleanedBadge
-  })
-  
-  return {
-    userId: badgeData.userId,
-    badges: cleanedBadges,
-    lastCalculated: badgeData.lastCalculated
-  }
-}
 
 // Helper function to get activities from user data
 const getActivitiesFromUserData = (userData: any) => {
@@ -169,9 +143,10 @@ export function useBadgeData(userId?: string) {
         const data = doc.data() as UserBadgeData
         setBadgeData(data)
         setLoading(false)
-      } else {
-        // Create initial badge data if it doesn't exist
+      } else if (userData) {
         await initializeBadgeData(userId)
+      } else {
+        setLoading(false)
       }
     }, (error) => {
       console.error('Error fetching badge data:', error)
@@ -179,7 +154,13 @@ export function useBadgeData(userId?: string) {
     })
 
     return () => unsubscribe()
-  }, [userId])
+  }, [userId, userData])
+
+  // Create badge doc once user profile data is available
+  useEffect(() => {
+    if (!userId || !userData || badgeData) return
+    void initializeBadgeData(userId)
+  }, [userId, userData, badgeData])
 
   // Calculate and update badges when user data changes
   useEffect(() => {
@@ -252,19 +233,7 @@ export function useBadgeData(userId?: string) {
     if (!userData) return
 
     const activities = getActivitiesFromUserData(userData)
-    const newBadges = calculateAllBadges(userData, activities)
-
-    const initialData: UserBadgeData = {
-      userId,
-      badges: newBadges,
-      lastCalculated: new Date()
-    }
-
-    // Clean the data for Firestore
-    const cleanedData = cleanBadgeDataForFirestore(initialData)
-
-    const badgeRef = doc(db, 'badges', userId)
-    await setDoc(badgeRef, cleanedData)
+    const initialData = await ensureUserBadgeDocument(userId, userData, activities)
     setBadgeData(initialData)
     setLoading(false)
   }
