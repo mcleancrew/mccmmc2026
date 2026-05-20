@@ -1,0 +1,5 @@
+allowBuilds:
+  '@firebase/util': true
+  '@vercel/speed-insights': true
+  protobufjs: true
+  sharp: true

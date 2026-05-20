@@ -14,6 +14,9 @@ import { Eye, Users, Trophy, Upload } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
+const signupPageShellClass =
+  "min-h-screen flex items-center justify-center p-4 text-white bg-[#c99797] bg-[linear-gradient(135deg,rgba(239,246,255,1)_0%,rgba(65,6,30,1)_100%)]"
+
 export default function SignupPage() {
   const { signUp, continueAsGuest, isAuthenticated, isLoading: authLoading, isGuest, user } = useAuth()
   const { toast } = useToast()
@@ -36,7 +39,7 @@ export default function SignupPage() {
   // Show loading while checking auth state
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 p-4">
+      <div className={signupPageShellClass}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -82,7 +85,7 @@ export default function SignupPage() {
       await signUp(formData.name, formData.email, formData.password)
       toast({
         title: "Account created!",
-        description: "Please check your email to verify your account before signing in.",
+        description: "You can now submit workouts and track your progress!",
       })
       // Redirect to signin page after successful signup
       router.push("/signin")
@@ -117,14 +120,16 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 p-4">
+    <div className={signupPageShellClass}>
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-            <Trophy className="h-8 w-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100">Million Meters</h1>
+          <img
+            src="/images/mclean-crew-logo.png"
+            alt="McLean Crew Logo"
+            className="h-32 w-32 object-contain mx-auto mb-4"
+          />
+          <h1 className="text-3xl font-bold text-[#7c2d12]">Million Meters</h1>
           <p className="text-slate-600 dark:text-slate-400 mt-2">Join the rowing challenge</p>
         </div>
 
