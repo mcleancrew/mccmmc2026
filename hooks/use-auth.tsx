@@ -15,6 +15,7 @@ import {
   createDefaultUserDataForBadges,
   ensureUserBadgeDocument,
 } from "@/lib/user-badges"
+import type { UserClass, UserGender } from "@/lib/user-profile"
 
 interface User {
   id: string
@@ -27,7 +28,7 @@ interface AuthContextType {
   isGuest: boolean
   isAuthenticated: boolean
   isLoading: boolean
-  signUp: (name: string, email: string, password: string, gender: "M" | "F") => Promise<void>
+  signUp: (name: string, email: string, password: string, gender: UserGender, rowerClass: UserClass) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => void
   continueAsGuest: () => void
@@ -86,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe()
   }, [])
 
-  const signUp = async (name: string, email: string, password: string, gender: "M" | "F") => {
+  const signUp = async (name: string, email: string, password: string, gender: UserGender, rowerClass: UserClass) => {
     try {
       // Create user with Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
@@ -97,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username: name,
         email: email,
         Gender: gender,
+        Class: rowerClass,
         activities: [],
         createdAt: new Date()
       })

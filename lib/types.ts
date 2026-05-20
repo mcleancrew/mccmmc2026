@@ -1,3 +1,5 @@
+import type { UserClass, UserGender } from "@/lib/user-profile"
+
 export type WorkoutType = "erg" | "run" | "bike" | "swim" | "otw" | "lift" | "other"
 
 export interface Workout {
@@ -25,6 +27,8 @@ export interface UserData {
   dailyMetersByType?: { [key: string]: number }
   weeklyMetersByType?: { [key: string]: number }
   dayStreak: number
+  gender?: UserGender
+  rowerClass?: UserClass
 }
 
 export interface BadgeProgress {

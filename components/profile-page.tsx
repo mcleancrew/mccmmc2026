@@ -24,6 +24,7 @@ import { db } from "@/lib/firebase"
 import { isImageFile, readFileAsDataUrl, uploadProfileImage } from "@/lib/profile-image-upload"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { getTeamColorClass, getTeamLabel } from "@/lib/user-profile"
 
 interface ProfilePageProps {
   userId?: string
@@ -64,7 +65,9 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
     )
   }
 
-  const { name, profileImage, totalMeters, deficit, dailyRequired, dailyRequiredWithRest, workouts, dayStreak } = userData
+  const { name, profileImage, totalMeters, deficit, dailyRequired, dailyRequiredWithRest, workouts, dayStreak, gender, rowerClass } = userData
+  const teamLabel = getTeamLabel(gender)
+  const teamColorClass = getTeamColorClass(gender)
   const displayProfileImage = localProfileImage ?? profileImage
 
   const percentComplete = Math.min(100, (totalMeters / 1000000) * 100)
@@ -261,8 +264,24 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <p className="text-slate-600 dark:text-slate-400 font-medium">Rower</p>
+              <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm font-medium">
+                {teamLabel ? (
+                  <>
+                    <span className={teamColorClass}>{teamLabel}</span>
+                    {rowerClass && (
+                      <>
+                        <span className="text-slate-400 dark:text-slate-500" aria-hidden>
+                          —
+                        </span>
+                        <span className="text-slate-600 dark:text-slate-400">{rowerClass}</span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-slate-600 dark:text-slate-400">
+                    {rowerClass ?? "Rower"}
+                  </span>
+                )}
               </div>
             </div>
           </div>

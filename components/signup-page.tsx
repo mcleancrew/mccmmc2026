@@ -17,6 +17,7 @@ import { AuthPageHeader } from "@/components/auth-page-header"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { authPageShellClass } from "@/lib/auth-page-styles"
+import { USER_CLASS_OPTIONS, type UserClass } from "@/lib/user-profile"
 
 export default function SignupPage() {
   const { signUp, continueAsGuest, isAuthenticated, isLoading: authLoading, isGuest, user } = useAuth()
@@ -28,6 +29,7 @@ export default function SignupPage() {
     password: "",
     confirmPassword: "",
     team: "" as "" | "M" | "F",
+    rowerClass: "" as "" | UserClass,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -93,8 +95,18 @@ export default function SignupPage() {
       return
     }
 
+    if (!formData.rowerClass) {
+      toast({
+        title: "Class required",
+        description: "Please select your class for this school year.",
+        variant: "destructive",
+      })
+      setIsSubmitting(false)
+      return
+    }
+
     try {
-      await signUp(formData.name, formData.email, formData.password, formData.team)
+      await signUp(formData.name, formData.email, formData.password, formData.team, formData.rowerClass)
       toast({
         title: "Account created!",
         description: "You can now submit workouts and track your progress!",
@@ -178,6 +190,28 @@ export default function SignupPage() {
                   <SelectContent>
                     <SelectItem value="M">Boys team</SelectItem>
                     <SelectItem value="F">Girls team</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="rowerClass">Class from this current school year</Label>
+                <Select
+                  value={formData.rowerClass || undefined}
+                  onValueChange={(value: UserClass) =>
+                    setFormData((prev) => ({ ...prev, rowerClass: value }))
+                  }
+                  required
+                >
+                  <SelectTrigger id="rowerClass">
+                    <SelectValue placeholder="Select your class" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {USER_CLASS_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

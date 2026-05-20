@@ -5,6 +5,7 @@ import { doc, getDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useAuth } from "@/hooks/use-auth"
 import type { UserData, Workout, WorkoutType } from "@/lib/types"
+import type { UserClass, UserGender } from "@/lib/user-profile"
 import { getCurrentDateEST, convertToEST } from "@/lib/badge-calculations"
 import { getDaysLeft } from "@/lib/challenge-config"
 
@@ -161,7 +162,9 @@ export function useUserData(userId?: string, workoutType?: string) {
           dailyRequiredWithRest,
           topWorkoutType,
           workouts,
-          dayStreak
+          dayStreak,
+          gender: firestoreData.Gender as UserGender | undefined,
+          rowerClass: firestoreData.Class as UserClass | undefined,
         }
 
         setUserData(realUserData)
