@@ -33,6 +33,7 @@ interface ProfilePageProps {
 export default function ProfilePage({ userId }: ProfilePageProps) {
   const [selectedUserId, setSelectedUserId] = useState(userId || "current-user")
   const [selectedWorkoutType, setSelectedWorkoutType] = useState<string>("all")
+  const [profileTab, setProfileTab] = useState("progress")
   const { leaderboardData } = useLeaderboardData()
   const { userData, refetchUserData } = useUserData(selectedUserId === "current-user" ? undefined : selectedUserId)
   const { user, signOut } = useAuth()
@@ -422,7 +423,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
       </Collapsible>
 
       {/* Charts and Gallery */}
-      <Tabs defaultValue="progress" className="mb-6">
+      <Tabs value={profileTab} onValueChange={setProfileTab} className="mb-6">
         <TabsList className="grid grid-cols-2 mb-4">
           <TabsTrigger value="progress">Progress</TabsTrigger>
           <TabsTrigger value="gallery">Workout Gallery</TabsTrigger>
@@ -434,10 +435,12 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
               <CardTitle className="text-xl">Meters Per Day</CardTitle>
             </CardHeader>
             <CardContent>
-              <UserProgressChart 
-                userId={selectedUserId === "current-user" ? undefined : selectedUserId}
-                workoutType={selectedWorkoutType}
-              />
+              {profileTab === "progress" && (
+                <UserProgressChart
+                  userId={selectedUserId === "current-user" ? undefined : selectedUserId}
+                  workoutType={selectedWorkoutType}
+                />
+              )}
 
               <div className="mt-4">
                 <Tabs value={selectedWorkoutType} onValueChange={setSelectedWorkoutType}>

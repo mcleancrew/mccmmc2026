@@ -37,8 +37,8 @@ export function UserProgressChart({ userId, workoutType }: UserProgressChartProp
   }
 
   return (
-    <div className="w-full h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full min-w-0 h-[300px] min-h-[300px]">
+      <ResponsiveContainer width="100%" height={300} minWidth={0}>
         <BarChart data={progressData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />

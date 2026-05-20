@@ -163,12 +163,12 @@ export default function SignupPage() {
           <form onSubmit={handleSignup}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">First Name Last Initial</Label>
                 <Input
                   id="name"
                   name="name"
                   type="text"
-                  placeholder="Enter your full name"
+                  placeholder="example: Adrian W"
                   value={formData.name}
                   onChange={handleInputChange}
                   required

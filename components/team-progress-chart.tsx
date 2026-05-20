@@ -35,8 +35,8 @@ export function TeamProgressChart() {
 
   // Chart rendering as a function for reuse
   const renderChart = (height = 300) => (
-    <div className="w-full" style={{ height }}>
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full min-w-0" style={{ height, minHeight: height }}>
+      <ResponsiveContainer width="100%" height={height} minWidth={0}>
         <BarChart data={progressData} margin={{ left: 5, right: 10, top: 5, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />
@@ -89,7 +89,7 @@ export function TeamProgressChart() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="flex-1 flex items-center justify-center p-2">
+            <div className="flex-1 min-h-0 w-full p-2">
               {renderChart(600)}
             </div>
           </div>
