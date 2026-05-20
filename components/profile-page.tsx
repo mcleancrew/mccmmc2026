@@ -221,14 +221,36 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
               </Avatar>
             </div>
 
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-black bg-gradient-to-r from-brand to-purple-600 bg-clip-text text-transparent">
-                  {name}
-                </h1>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-3">
+                <div className="flex flex-col min-w-0">
+                  <h1 className="text-3xl font-black bg-gradient-to-r from-brand to-purple-600 bg-clip-text text-transparent leading-tight">
+                    {name}
+                  </h1>
+
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-sm font-medium">
+                    {teamLabel ? (
+                      <>
+                        <span className={teamColorClass}>{teamLabel}</span>
+                        {rowerClass && (
+                          <>
+                            <span className="text-slate-400 dark:text-slate-500" aria-hidden>
+                              —
+                            </span>
+                            <span className="text-slate-600 dark:text-slate-400">{rowerClass}</span>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-slate-600 dark:text-slate-400">
+                        {rowerClass ?? "Rower"}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
                 {/* Enhanced badge counter */}
-                <div className="relative group">
+                <div className="relative group shrink-0">
                   {/* Multiple glow rings */}
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-300 animate-pulse scale-150"></div>
                   <div className="absolute inset-0 bg-gradient-to-r from-brand-muted to-cyan-400 rounded-full blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300 animate-pulse delay-300 scale-125"></div>
@@ -262,26 +284,6 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/90"></div>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm font-medium">
-                {teamLabel ? (
-                  <>
-                    <span className={teamColorClass}>{teamLabel}</span>
-                    {rowerClass && (
-                      <>
-                        <span className="text-slate-400 dark:text-slate-500" aria-hidden>
-                          —
-                        </span>
-                        <span className="text-slate-600 dark:text-slate-400">{rowerClass}</span>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-slate-600 dark:text-slate-400">
-                    {rowerClass ?? "Rower"}
-                  </span>
-                )}
               </div>
             </div>
           </div>
