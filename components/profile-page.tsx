@@ -55,7 +55,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
     return (
       <div className="container px-4 py-6">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400">Loading profile data...</p>
         </div>
       </div>
@@ -201,10 +201,10 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
           <div className="flex items-center">
             <div className="relative mr-4">
               {/* Glowing ring around avatar */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-md opacity-30 animate-pulse"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-muted to-purple-400 rounded-full blur-md opacity-30 animate-pulse"></div>
               <Avatar className="h-20 w-20 relative border-4 border-white/50 shadow-xl">
                 <AvatarImage src={profileImage || "/placeholder.svg"} alt={name} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-100 to-purple-100 text-blue-800 text-lg font-bold">
+                <AvatarFallback className="bg-gradient-to-br from-brand-100 to-purple-100 text-brand-800 text-lg font-bold">
                   {name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -212,7 +212,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
 
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-black bg-gradient-to-r from-brand to-purple-600 bg-clip-text text-transparent">
                   {name}
                 </h1>
 
@@ -220,7 +220,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
                 <div className="relative group">
                   {/* Multiple glow rings */}
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity duration-300 animate-pulse scale-150"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300 animate-pulse delay-300 scale-125"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-brand-muted to-cyan-400 rounded-full blur-md opacity-40 group-hover:opacity-70 transition-opacity duration-300 animate-pulse delay-300 scale-125"></div>
 
                   {/* Main badge container */}
                   <div className="relative flex items-center justify-center w-10 h-10 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white text-sm font-bold rounded-full shadow-2xl transform transition-all duration-500 group-hover:scale-125 group-hover:rotate-12">
@@ -265,7 +265,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="text-center mb-4">
-            <span className="text-4xl font-bold text-blue-700 dark:text-blue-300">
+            <span className="text-4xl font-bold text-brand dark:text-brand-muted">
               {new Intl.NumberFormat().format(totalMeters)}
             </span>
             <span className="text-lg text-slate-500 dark:text-slate-400 ml-2">meters</span>
@@ -284,7 +284,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
         <Card>
           <CardContent className="p-4 text-center">
             <div className="flex items-center justify-center mb-2">
-              <Activity className="h-5 w-5 text-blue-600" />
+              <Activity className="h-5 w-5 text-brand" />
             </div>
             <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">{workoutCount}</p>
             <p className="text-xs text-slate-600 dark:text-slate-400">Workouts</p>
@@ -336,7 +336,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
             <Card>
               <CardContent className="p-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Daily Required</p>
-                <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">
+                <p className="text-xl font-semibold text-brand dark:text-brand-muted">
                   {new Intl.NumberFormat().format(dailyRequired)}m
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-500">per day to reach goal</p>
@@ -382,9 +382,9 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
               </div>
 
               {calculatedDays !== null && (
-                <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg text-center">
+                <div className="bg-brand-50 dark:bg-brand-950 p-3 rounded-lg text-center">
                   <p className="text-sm text-slate-600 dark:text-slate-400">You will complete the challenge in:</p>
-                  <p className="text-xl font-semibold text-blue-800 dark:text-blue-200">{calculatedDays} days</p>
+                  <p className="text-xl font-semibold text-brand-800 dark:text-brand-300">{calculatedDays} days</p>
                 </div>
               )}
             </CardContent>
@@ -468,10 +468,10 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
                 variant="outline"
                 onClick={triggerFileInput}
                 disabled={isUploading}
-                className="w-full text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950"
+                className="w-full text-brand dark:text-brand-muted border-brand-200 dark:border-brand-800 hover:bg-brand-50 dark:hover:bg-brand-950"
               >
                 {isUploading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand mr-2"></div>
                 ) : (
                   <Camera className="h-4 w-4 mr-2" />
                 )}

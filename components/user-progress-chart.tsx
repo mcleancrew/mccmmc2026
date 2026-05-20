@@ -23,7 +23,7 @@ export function UserProgressChart({ userId, workoutType }: UserProgressChartProp
       return (
         <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
           <p className="font-semibold">{label}</p>
-          <p className="text-blue-600">
+          <p className="text-brand">
             {new Intl.NumberFormat().format(payload[0].value)} meters
           </p>
         </div>

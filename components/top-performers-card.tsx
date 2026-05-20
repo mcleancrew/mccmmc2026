@@ -174,7 +174,7 @@ export default function TopPerformersCard() {
       title: "Daily Top",
       icon: Clock,
       performer: topPerformers.daily,
-      iconColor: "text-blue-600",
+      iconColor: "text-brand",
     },
   ]
 
@@ -196,21 +196,21 @@ export default function TopPerformersCard() {
               <div className="flex flex-col items-center w-full">
                 <Avatar className="h-10 w-10 mb-2">
                   <AvatarImage src={performer.performer?.profileImage || "/placeholder.svg"} alt={performer.performer?.name || "Unknown"} />
-                  <AvatarFallback className="bg-blue-100 text-blue-800 text-xs">
+                  <AvatarFallback className="bg-brand-100 text-brand-800 text-xs">
                     {performer.performer?.name?.substring(0, 2).toUpperCase() || "??"}
                   </AvatarFallback>
                 </Avatar>
 
                 <p 
                   className={`text-sm font-medium text-slate-800 dark:text-slate-200 mb-1 w-full text-center ${
-                    performer.performer ? 'cursor-pointer hover:text-blue-600 dark:hover:text-blue-400' : ''
+                    performer.performer ? 'cursor-pointer hover:text-brand dark:hover:text-brand-muted' : ''
                   }`}
                   onClick={() => performer.performer && handleProfileClick(performer.performer.userId)}
                 >
                   {performer.performer?.name || "No data"}
                 </p>
 
-                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 w-full text-center">
+                <p className="text-xs font-semibold text-brand dark:text-brand-muted w-full text-center">
                   {performer.performer ? new Intl.NumberFormat().format(performer.performer.meters) : "0"}m
                 </p>
               </div>

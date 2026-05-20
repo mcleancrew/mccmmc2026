@@ -36,32 +36,32 @@ export default function TeamOverview() {
         </CardHeader>
         <CardContent>
           <div className="text-center mb-2">
-            <span className="text-3xl font-bold text-blue-700 dark:text-blue-300">
+            <span className="text-3xl font-bold text-brand dark:text-brand-muted">
               {new Intl.NumberFormat().format(totalMeters)}m
             </span>
           </div>
           <Progress value={percentComplete} className="h-3 mb-4" />
 
           <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+            <div className="bg-brand-50 dark:bg-brand-950 p-3 rounded-lg">
               <p className="text-sm text-slate-600 dark:text-slate-400">Team Deficit</p>
-              <p className="text-xl font-semibold text-blue-800 dark:text-blue-200">
+              <p className="text-xl font-semibold text-brand-800 dark:text-brand-300">
                 {new Intl.NumberFormat().format(deficit)}m
               </p>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+            <div className="bg-brand-50 dark:bg-brand-950 p-3 rounded-lg">
               <p className="text-sm text-slate-600 dark:text-slate-400">Remaining Days</p>
-              <p className="text-xl font-semibold text-blue-800 dark:text-blue-200">{remainingDays}</p>
+              <p className="text-xl font-semibold text-brand-800 dark:text-brand-300">{remainingDays}</p>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+            <div className="bg-brand-50 dark:bg-brand-950 p-3 rounded-lg">
               <p className="text-sm text-slate-600 dark:text-slate-400">Daily Team Goal</p>
-              <p className="text-xl font-semibold text-blue-800 dark:text-blue-200">
+              <p className="text-xl font-semibold text-brand-800 dark:text-brand-300">
                 {new Intl.NumberFormat().format(dailyTeamRequired)}m
               </p>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+            <div className="bg-brand-50 dark:bg-brand-950 p-3 rounded-lg">
               <p className="text-sm text-slate-600 dark:text-slate-400">Daily required /Person</p>
-              <p className="text-xl font-semibold text-blue-800 dark:text-blue-200">
+              <p className="text-xl font-semibold text-brand-800 dark:text-brand-300">
                 {new Intl.NumberFormat().format(dailyPersonRequired)}m
               </p>
             </div>

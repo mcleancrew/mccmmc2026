@@ -361,7 +361,7 @@ export default function WorkoutSubmission() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const workoutTypes = [
-    { id: "erg" as WorkoutType, name: "Erg", icon: Rows, color: "bg-blue-100 text-blue-700" },
+    { id: "erg" as WorkoutType, name: "Erg", icon: Rows, color: "bg-brand-100 text-brand" },
     { id: "run" as WorkoutType, name: "Run", icon: PersonStanding, color: "bg-green-100 text-green-700" },
     { id: "bike" as WorkoutType, name: "Bike", icon: Bike, color: "bg-purple-100 text-purple-700" },
     { id: "swim" as WorkoutType, name: "Swim", icon: PersonStanding, color: "bg-cyan-100 text-cyan-700" },
@@ -588,7 +588,7 @@ export default function WorkoutSubmission() {
 
   return (
     <div className="container px-4 py-6">
-      <h1 className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-6">Log Workout</h1>
+      <h1 className="text-2xl font-bold text-brand dark:text-brand-100 mb-6">Log Workout</h1>
 
       <form onSubmit={handleSubmit}>
         <Card>
@@ -625,7 +625,7 @@ export default function WorkoutSubmission() {
                     type="button"
                     className={`p-3 rounded-lg border transition-colors ${
                       boatType === "1x"
-                        ? "bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300"
+                        ? "bg-brand-100 dark:bg-brand-900 border-brand text-brand dark:text-brand-muted"
                         : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
                     }`}
                     onClick={() => setBoatType("1x")}
@@ -639,7 +639,7 @@ export default function WorkoutSubmission() {
                     type="button"
                     className={`p-3 rounded-lg border transition-colors ${
                       boatType === "2x"
-                        ? "bg-blue-100 dark:bg-blue-900 border-blue-500 text-blue-700 dark:text-blue-300"
+                        ? "bg-brand-100 dark:bg-brand-900 border-brand text-brand dark:text-brand-muted"
                         : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
                     }`}
                     onClick={() => setBoatType("2x")}

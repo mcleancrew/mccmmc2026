@@ -115,7 +115,7 @@ export function AnimationShowcase() {
           <Card hover="rotate">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-blue-500" />
+                <Zap className="h-5 w-5 text-brand-hover" />
                 Rotate Effect
               </CardTitle>
               <CardDescription>
@@ -200,7 +200,7 @@ export function AnimationShowcase() {
       </div>
 
       {/* Interactive Elements Info */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 rounded-lg p-6">
+      <div className="bg-gradient-to-r from-brand-50 to-purple-50 dark:from-brand-950 dark:to-purple-950 rounded-lg p-6">
         <h3 className="text-xl font-semibold mb-4">Animation Features</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
@@ -227,15 +227,15 @@ export function AnimationShowcase() {
         <h3 className="text-xl font-semibold">Navigation Demo</h3>
         <div className="bg-white dark:bg-slate-900 rounded-lg p-4 border">
           <div className="flex items-center justify-around bg-slate-100 dark:bg-slate-800 rounded-lg h-16 px-4">
-            <div className="flex flex-col items-center justify-center w-full h-full transition-all duration-300 ease-in-out transform hover:scale-110 hover:rotate-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
+            <div className="flex flex-col items-center justify-center w-full h-full transition-all duration-300 ease-in-out transform hover:scale-110 hover:rotate-2 text-slate-600 dark:text-slate-400 hover:text-brand dark:hover:text-brand-muted">
               <User className="h-5 w-5 transition-transform duration-300 hover:scale-125" />
               <span className="text-xs mt-1 transition-transform duration-300 hover:scale-110">Profile</span>
             </div>
-            <div className="flex flex-col items-center justify-center w-full h-full transition-all duration-300 ease-in-out transform hover:scale-110 hover:rotate-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
+            <div className="flex flex-col items-center justify-center w-full h-full transition-all duration-300 ease-in-out transform hover:scale-110 hover:rotate-2 text-slate-600 dark:text-slate-400 hover:text-brand dark:hover:text-brand-muted">
               <Users className="h-5 w-5 transition-transform duration-300 hover:scale-125" />
               <span className="text-xs mt-1 transition-transform duration-300 hover:scale-110">Team</span>
             </div>
-            <div className="flex flex-col items-center justify-center w-full h-full transition-all duration-300 ease-in-out transform hover:scale-110 hover:rotate-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
+            <div className="flex flex-col items-center justify-center w-full h-full transition-all duration-300 ease-in-out transform hover:scale-110 hover:rotate-2 text-slate-600 dark:text-slate-400 hover:text-brand dark:hover:text-brand-muted">
               <TrendingUp className="h-5 w-5 transition-transform duration-300 hover:scale-125" />
               <span className="text-xs mt-1 transition-transform duration-300 hover:scale-110">Stats</span>
             </div>

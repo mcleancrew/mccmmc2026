@@ -47,7 +47,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="container px-4 py-6">
-      <h1 className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-6">Leaderboard</h1>
+      <h1 className="text-2xl font-bold text-brand dark:text-brand-100 mb-6">Leaderboard</h1>
 
       <div className="mb-6">
         <Select defaultValue="all" onValueChange={(value) => setActiveTab(value as WorkoutType | "all")}>

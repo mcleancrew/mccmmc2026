@@ -25,7 +25,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
       </div>
     )
   }
@@ -34,7 +34,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   if (!isAuthenticated && pathname !== "/signup" && pathname !== "/signin") {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
       </div>
     )
   }

@@ -12,7 +12,7 @@ export default function Submit() {
   if (isGuest) {
     return (
       <div className="container px-4 py-6">
-        <h1 className="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-6">Log Workout</h1>
+        <h1 className="text-2xl font-bold text-brand dark:text-brand-100 mb-6">Log Workout</h1>
 
         <Card>
           <CardContent className="py-8 text-center">

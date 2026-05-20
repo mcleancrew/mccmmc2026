@@ -413,7 +413,7 @@ export default function AdminPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
+              <User className="h-5 w-5 text-brand" />
               Adjust Profile
             </CardTitle>
             <CardDescription>Modify a rower's profile picture or subtract meters from their score</CardDescription>
@@ -449,10 +449,10 @@ export default function AdminPage() {
                     variant="outline"
                     onClick={triggerFileInput}
                     disabled={isUploadingProfile || !selectedRower}
-                    className="w-full text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950"
+                    className="w-full text-brand dark:text-brand-muted border-brand-200 dark:border-brand-800 hover:bg-brand-50 dark:hover:bg-brand-950"
                   >
                     {isUploadingProfile ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand mr-2"></div>
                     ) : (
                       <Camera className="h-4 w-4 mr-2" />
                     )}
@@ -482,7 +482,7 @@ export default function AdminPage() {
                           value="add"
                           checked={meterOperation === "add"}
                           onChange={(e) => setMeterOperation(e.target.value as "add" | "subtract")}
-                          className="text-blue-600"
+                          className="text-brand"
                         />
                         <span className="text-sm font-medium">Add Meters</span>
                       </label>

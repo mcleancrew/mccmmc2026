@@ -18,7 +18,7 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-105 hover:rotate-1 hover:shadow-lg",
         ghost: "hover:bg-accent hover:text-accent-foreground hover:scale-105 hover:rotate-1",
         link: "text-primary underline-offset-4 hover:underline hover:scale-105",
-        animated: "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-110 hover:rotate-2 hover:shadow-xl transform transition-all duration-300 ease-in-out",
+        animated: "bg-gradient-to-r from-brand to-purple-600 text-white hover:from-brand hover:to-purple-700 hover:scale-110 hover:rotate-2 hover:shadow-xl transform transition-all duration-300 ease-in-out",
         bounce: "bg-green-500 text-white hover:bg-green-600 hover:scale-110 hover:-translate-y-1 hover:shadow-xl transform transition-all duration-300 ease-out hover:ease-in",
         rotate: "bg-orange-500 text-white hover:bg-orange-600 hover:scale-105 hover:rotate-6 hover:shadow-lg transform transition-all duration-300 ease-in-out",
       },

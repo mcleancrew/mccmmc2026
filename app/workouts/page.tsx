@@ -104,7 +104,7 @@ export default function WorkoutsPage() {
   const getWorkoutTypeColor = (type: string) => {
     switch (type) {
       case "erg":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+        return "bg-brand-100 text-brand dark:bg-brand-900 dark:text-brand-muted"
       case "otw":
         return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
       case "run":
@@ -133,7 +133,7 @@ export default function WorkoutsPage() {
     return (
       <div className="container px-4 py-6">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400">Loading workouts...</p>
         </div>
       </div>
@@ -144,7 +144,7 @@ export default function WorkoutsPage() {
     <>
       <div className="container px-4 py-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-2">All Workouts</h1>
+          <h1 className="text-3xl font-bold text-brand dark:text-brand-100 mb-2">All Workouts</h1>
           <p className="text-slate-600 dark:text-slate-400">
             {allWorkouts.length} workouts from the team • Newest first
           </p>
@@ -170,13 +170,13 @@ export default function WorkoutsPage() {
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <Avatar className="h-12 w-12 flex-shrink-0">
                         <AvatarImage src={workout.userProfileImage || "/placeholder.svg"} alt={workout.userName} />
-                        <AvatarFallback className="bg-blue-100 text-blue-800">
+                        <AvatarFallback className="bg-brand-100 text-brand-800">
                           {workout.userName.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
                         <h3 
-                          className="font-semibold text-slate-900 dark:text-slate-100 truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          className="font-semibold text-slate-900 dark:text-slate-100 truncate cursor-pointer hover:text-brand dark:hover:text-brand-muted transition-colors"
                           onClick={() => handleUserNameClick(workout.userId)}
                         >
                           {workout.userName}
@@ -192,7 +192,7 @@ export default function WorkoutsPage() {
                       <span className={`text-sm px-3 py-1 rounded-full font-medium ${getWorkoutTypeColor(workout.type)}`}>
                         {workout.type.toUpperCase()}
                       </span>
-                      <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                      <p className="text-lg font-semibold text-brand dark:text-brand-muted">
                         {new Intl.NumberFormat().format(workout.meters)}m
                       </p>
                     </div>

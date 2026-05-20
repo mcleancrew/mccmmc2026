@@ -43,7 +43,7 @@ export default function BadgeMigrationPage() {
   return (
     <div className="container px-4 py-6 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-100 mb-2">
+        <h1 className="text-3xl font-bold text-brand dark:text-brand-100 mb-2">
           Badge Migration Tool
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
@@ -65,11 +65,11 @@ export default function BadgeMigrationPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                <Users className="h-5 w-5 text-blue-600" />
+              <div className="flex items-center gap-3 p-3 bg-brand-50 dark:bg-brand-950 rounded-lg">
+                <Users className="h-5 w-5 text-brand" />
                 <div>
-                  <p className="font-medium text-blue-900 dark:text-blue-100">All Users</p>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">Process every user</p>
+                  <p className="font-medium text-brand dark:text-brand-100">All Users</p>
+                  <p className="text-sm text-brand dark:text-brand-muted">Process every user</p>
                 </div>
               </div>
               

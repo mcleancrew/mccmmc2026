@@ -15,9 +15,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { sendPasswordResetEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
-
-const signinPageShellClass =
-  "min-h-screen flex items-center justify-center p-4 text-white bg-[#c99797] bg-[linear-gradient(135deg,rgba(239,246,255,1)_0%,rgba(65,6,30,1)_100%)]"
+import { authPageShellClass } from "@/lib/auth-page-styles"
 
 export default function SigninPage() {
   const { signIn, continueAsGuest, isAuthenticated, isLoading: authLoading, isGuest, user } = useAuth()
@@ -40,8 +38,8 @@ export default function SigninPage() {
   // Show loading while checking auth state
   if (authLoading) {
     return (
-      <div className={signinPageShellClass}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className={authPageShellClass}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
       </div>
     )
   }
@@ -136,7 +134,7 @@ export default function SigninPage() {
   }
 
   return (
-    <div className={signinPageShellClass}>
+    <div className={authPageShellClass}>
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -145,7 +143,7 @@ export default function SigninPage() {
             alt="McLean Crew Logo"
             className="h-32 w-32 object-contain mx-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-[#7c2d12]">Welcome Back</h1>
+          <h1 className="text-3xl font-bold text-brand">Welcome Back</h1>
           <p className="text-slate-600 dark:text-slate-400 mt-2">Sign in to your Million Meters account</p>
         </div>
 
@@ -207,7 +205,7 @@ export default function SigninPage() {
                 <div className="text-sm">
                   <button
                     type="button"
-                    className="text-blue-600 hover:text-blue-500 hover:underline"
+                    className="text-brand hover:text-brand-hover hover:underline"
                     onClick={handlePasswordReset}
                   >
                     Forgot your password?
@@ -259,7 +257,7 @@ export default function SigninPage() {
 
         <p className="text-center text-xs text-slate-500 mt-6">
           Don't have an account?{" "}
-          <Link href="/signup" className="text-blue-600 hover:underline">
+          <Link href="/signup" className="text-brand hover:underline">
             Sign up here
           </Link>
         </p>

@@ -23,7 +23,7 @@ export function WorkoutTypeCard({ workoutType, isSelected, onSelect }: WorkoutTy
       className={cn(
         "flex flex-col items-center justify-center p-3 rounded-lg cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-110 hover:rotate-2 hover:shadow-lg",
         isSelected
-          ? "bg-blue-100 dark:bg-blue-900 border-2 border-blue-500 scale-105"
+          ? "bg-brand-100 dark:bg-brand-900 border-2 border-brand scale-105"
           : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700",
       )}
       onClick={onSelect}

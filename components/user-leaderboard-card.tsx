@@ -21,11 +21,11 @@ export function UserLeaderboardCard({ user, rank }: UserLeaderboardCardProps) {
               <div className="relative">
                 <Avatar className="h-12 w-12" hover="rotate">
                   <AvatarImage src={user.profileImage || "/placeholder.svg"} alt={user.name} />
-                  <AvatarFallback className="bg-blue-100 text-blue-800">
+                  <AvatarFallback className="bg-brand-100 text-brand-800">
                     {user.name.substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium transition-transform duration-300 hover:scale-125 hover:rotate-12">
+                <div className="absolute -bottom-1 -right-1 bg-brand text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium transition-transform duration-300 hover:scale-125 hover:rotate-12">
                   {rank}
                 </div>
               </div>

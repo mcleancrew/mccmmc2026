@@ -15,7 +15,7 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80 hover:scale-110 hover:rotate-2 hover:shadow-md transform",
         outline: "text-foreground hover:scale-110 hover:rotate-2 hover:shadow-md transform",
-        animated: "border-transparent bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 hover:scale-125 hover:rotate-6 hover:shadow-lg transform",
+        animated: "border-transparent bg-gradient-to-r from-brand to-purple-600 text-white hover:from-brand hover:to-purple-700 hover:scale-125 hover:rotate-6 hover:shadow-lg transform",
         bounce: "border-transparent bg-green-500 text-white hover:bg-green-600 hover:scale-110 hover:-translate-y-1 hover:shadow-md transform transition-all duration-300 ease-out hover:ease-in",
       },
     },

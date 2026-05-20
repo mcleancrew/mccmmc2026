@@ -284,7 +284,7 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
       <Card className="mt-6">
         <CardContent className="pt-6">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
             <p className="text-slate-600 dark:text-slate-400">Loading badges...</p>
           </div>
         </CardContent>
@@ -303,10 +303,10 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
         }
       case "rare":
         return {
-          bg: "bg-blue-50 dark:bg-blue-950",
-          border: "border-blue-300 dark:border-blue-600",
-          glow: "shadow-blue-200 dark:shadow-blue-700",
-          text: "text-blue-700 dark:text-blue-300",
+          bg: "bg-brand-50 dark:bg-brand-950",
+          border: "border-brand-300 dark:border-brand",
+          glow: "shadow-brand-200 dark:shadow-brand-700",
+          text: "text-brand dark:text-brand-muted",
         }
       case "epic":
         return {
@@ -384,7 +384,7 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
 
             {/* Rare Shelf */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
+              <div className="flex items-center gap-2 text-sm font-medium text-brand dark:text-brand-muted">
                 <Star className="h-4 w-4" />
                 Rare
               </div>
@@ -508,10 +508,10 @@ function getRarityColors(rarity: Achievement["rarity"]) {
       }
     case "rare":
       return {
-        bg: "bg-blue-50 dark:bg-blue-950",
-        border: "border-blue-300 dark:border-blue-600",
-        glow: "shadow-blue-200 dark:shadow-blue-700",
-        text: "text-blue-700 dark:text-blue-300",
+        bg: "bg-brand-50 dark:bg-brand-950",
+        border: "border-brand-300 dark:border-brand",
+        glow: "shadow-brand-200 dark:shadow-brand-700",
+        text: "text-brand dark:text-brand-muted",
       }
     case "epic":
       return {

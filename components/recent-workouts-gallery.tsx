@@ -47,7 +47,7 @@ export function RecentWorkoutsGallery() {
   const getWorkoutTypeColor = (type: string) => {
     switch (type) {
       case "erg":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+        return "bg-brand-100 text-brand dark:bg-brand-900 dark:text-brand-muted"
       case "otw":
         return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
       case "run":
@@ -76,14 +76,14 @@ export function RecentWorkoutsGallery() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 
-            className="text-lg font-semibold text-blue-900 dark:text-blue-100 cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            className="text-lg font-semibold text-brand dark:text-brand-100 cursor-pointer hover:text-brand-hover dark:hover:text-brand-muted transition-colors"
             onClick={handleTitleClick}
           >
             Recent Workouts
           </h3>
           <button
             onClick={() => router.push('/workouts')}
-            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+            className="px-3 py-1.5 bg-brand hover:bg-brand-hover text-white text-sm font-medium rounded-md transition-colors"
           >
             All Workouts
           </button>
@@ -125,7 +125,7 @@ export function RecentWorkoutsGallery() {
                       <div className="flex items-center gap-2 mb-2">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={workout.userProfileImage || "/placeholder.svg"} alt={workout.userName} />
-                          <AvatarFallback className="bg-blue-100 text-blue-800 text-xs">
+                          <AvatarFallback className="bg-brand-100 text-brand-800 text-xs">
                             {workout.userName.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
@@ -137,7 +137,7 @@ export function RecentWorkoutsGallery() {
 
                       <div className="flex items-center justify-between mb-2">
                         <span className={`text-xs px-2 py-1 rounded-full font-medium ${getWorkoutTypeColor(workout.type)}`}>{workout.type.toUpperCase()}</span>
-                        <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">{new Intl.NumberFormat().format(workout.meters)}m</p>
+                        <p className="text-sm font-semibold text-brand dark:text-brand-muted">{new Intl.NumberFormat().format(workout.meters)}m</p>
                       </div>
 
                       {firstImage && (
@@ -168,19 +168,19 @@ export function RecentWorkoutsGallery() {
 
           {/* "Want to see more?" card */}
           <div className="flex-shrink-0 w-48">
-            <Card className="h-full bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border-blue-200 dark:border-blue-800">
+            <Card className="h-full bg-gradient-to-br from-brand-50 to-indigo-50 dark:from-brand-950 dark:to-indigo-950 border-brand-200 dark:border-brand-800">
               <CardContent className="p-3 flex flex-col justify-center items-center text-center h-full">
                 <div className="mb-3">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-brand-100 dark:bg-brand-900 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <svg className="w-4 h-4 text-brand dark:text-brand-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </div>
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Want to see more?</p>
+                  <p className="text-sm font-medium text-brand dark:text-brand-100">Want to see more?</p>
                 </div>
                 <button
                   onClick={() => router.push('/workouts')}
-                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors"
+                  className="px-3 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-medium rounded-md transition-colors"
                 >
                   All Workouts
                 </button>
