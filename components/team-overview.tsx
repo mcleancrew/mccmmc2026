@@ -32,7 +32,7 @@ export default function TeamOverview() {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl text-center">Team Progress</CardTitle>
+          <CardTitle className="text-xl text-center">Total Team Meters</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center mb-2">
@@ -44,7 +44,7 @@ export default function TeamOverview() {
 
           <div className="grid grid-cols-2 gap-4 mt-6">
             <div className="bg-brand-50 dark:bg-brand-950 p-3 rounded-lg">
-              <p className="text-sm text-slate-600 dark:text-slate-400">Team Deficit</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Team Deficit to 17M</p>
               <p className="text-xl font-semibold text-brand-800 dark:text-brand-300">
                 {new Intl.NumberFormat().format(deficit)}m
               </p>
@@ -71,7 +71,7 @@ export default function TeamOverview() {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-xl">Team Progress Graph</CardTitle>
+          <CardTitle className="text-xl">Team Meters Per Day</CardTitle>
         </CardHeader>
         <CardContent>
           <TeamProgressChart />

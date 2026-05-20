@@ -143,8 +143,8 @@ export default function SigninPage() {
             alt="McLean Crew Logo"
             className="h-32 w-32 object-contain mx-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-brand">Welcome Back</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">Sign in to your Million Meters account</p>
+          <h1 className="text-3xl font-bold text-brand">Mclean Crew Club <br/> Million Meters Challenge  </h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-2">Developed and maintained by Adrian Wiklund</p>
         </div>
 
         <Card>
@@ -153,7 +153,7 @@ export default function SigninPage() {
             <CardDescription>
               {isGuest 
                 ? "Sign in with your existing account to submit workouts and track your progress!" 
-                : "Enter your credentials to access your account"
+                : "Enter your password to access your account"
               }
             </CardDescription>
           </CardHeader>

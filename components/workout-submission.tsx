@@ -585,7 +585,7 @@ export default function WorkoutSubmission() {
         <Card>
           <CardHeader>
             <CardTitle>Workout Details</CardTitle>
-            <CardDescription>Log your workout to contribute to the Million Meters Challenge</CardDescription>
+            <CardDescription>Log your workout on this page, which automatically converts meters and updates your profile.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
@@ -611,7 +611,7 @@ export default function WorkoutSubmission() {
 
             {selectedWorkoutType === "otw" && (
               <div className="space-y-2">
-                <Label>Boat Type</Label>
+                <Label>Boat Type *eights practices unfortunatley do not count towards the challenge*</Label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"

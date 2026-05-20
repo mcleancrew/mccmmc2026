@@ -79,7 +79,7 @@ export function RecentWorkoutsGallery() {
             className="text-lg font-semibold text-brand dark:text-brand-100 cursor-pointer hover:text-brand-hover dark:hover:text-brand-muted transition-colors"
             onClick={handleTitleClick}
           >
-            Recent Workouts
+            Recent Team Workouts
           </h3>
           <button
             onClick={() => router.push('/workouts')}

@@ -87,7 +87,7 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
     {
       id: "million-meter-champion",
       name: "Million Meter Champion",
-      description: "Complete the full 1,000,000 meter challenge",
+      description: "Complete the full 1M meter challenge",
       icon: Crown,
       earned: badges["million-meter-champion"]?.earned || false,
       earnedDate: badges["million-meter-champion"]?.earnedDate,
@@ -122,7 +122,7 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
     {
       id: "marathon",
       name: "Marathon",
-      description: "Complete 42,195 meters in one sitting",
+      description: "Complete 42,195 meters in one erg workout",
       icon: Target,
       earned: badges["marathon"]?.earned || false,
       earnedDate: badges["marathon"]?.earnedDate,
@@ -143,7 +143,7 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
     },
     {
       id: "nates-favorite",
-      name: "Nate's Favorite",
+      name: "Azim's Favorite",
       description: "Get a 2k PR",
       icon: Trophy,
       earned: badges["nates-favorite"]?.earned || false,
@@ -212,7 +212,7 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
     {
       id: "zigzag-method",
       name: "Zigzag Method",
-      description: "Complete an 8 x 6:35",
+      description: "Erg an 8 x 6:35 - 5 min rest",
       icon: ZigzagIcon,
       earned: badges["zigzag-method"]?.earned || false,
       earnedDate: badges["zigzag-method"]?.earnedDate,
@@ -223,7 +223,7 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
     {
       id: "mystery-badge",
       name: "???",
-      description: "???",
+      description: "Mystery Badge",
       icon: HelpCircle,
       earned: badges["mystery-badge"]?.earned || false,
       earnedDate: badges["mystery-badge"]?.earnedDate,
