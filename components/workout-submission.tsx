@@ -322,9 +322,19 @@ const getBadgeName = (badgeId: string): string => {
 
 const allowsDecimalDistance = (type: WorkoutType) => type === "run" || type === "bike"
 
+/** Normalize miles input: trim, map comma decimals (common on mobile), strip stray spaces. */
+const normalizeDistanceInput = (value: string): string =>
+  value.trim().replace(/\s/g, "").replace(",", ".")
+
+const parseDistanceNumber = (value: string): number => {
+  const normalized = normalizeDistanceInput(value)
+  if (!normalized || normalized === ".") return NaN
+  return Number.parseFloat(normalized)
+}
+
 const isValidDistanceInput = (value: string, type: WorkoutType): boolean => {
   if (!value.trim()) return false
-  const num = Number(value)
+  const num = parseDistanceNumber(value)
   if (!Number.isFinite(num) || num <= 0) return false
   if (allowsDecimalDistance(type)) return true
   return Number.isInteger(num)
@@ -332,7 +342,7 @@ const isValidDistanceInput = (value: string, type: WorkoutType): boolean => {
 
 const isValidDistanceChange = (value: string, type: WorkoutType): boolean => {
   if (value === "") return true
-  if (allowsDecimalDistance(type)) return /^(\d+\.?\d*|\.\d*)$/.test(value)
+  if (allowsDecimalDistance(type)) return /^(\d+([.,]\d*)?|[.,]\d*)$/.test(value)
   return /^\d+$/.test(value)
 }
 
@@ -552,8 +562,8 @@ export default function WorkoutSubmission() {
   }
 
   const getConvertedMeters = () => {
-    const distanceNum = Number.parseFloat(distance) || 0
-    if (distanceNum <= 0) return 0
+    const distanceNum = parseDistanceNumber(distance)
+    if (!Number.isFinite(distanceNum) || distanceNum <= 0) return 0
 
     switch (selectedWorkoutType) {
       case "erg":
@@ -581,7 +591,7 @@ export default function WorkoutSubmission() {
     <div className="container px-4 py-6">
       <h1 className="text-2xl font-bold text-brand dark:text-brand-100 mb-6">Log Workout</h1>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <Card>
           <CardHeader>
             <CardTitle>Workout Details</CardTitle>
@@ -652,6 +662,8 @@ export default function WorkoutSubmission() {
                   id="distance"
                   type={allowsDecimalDistance(selectedWorkoutType) ? "text" : "number"}
                   inputMode={allowsDecimalDistance(selectedWorkoutType) ? "decimal" : "numeric"}
+                  lang={allowsDecimalDistance(selectedWorkoutType) ? "en" : undefined}
+                  autoComplete="off"
                   step={allowsDecimalDistance(selectedWorkoutType) ? undefined : "1"}
                   min={allowsDecimalDistance(selectedWorkoutType) ? undefined : "1"}
                   placeholder={
