@@ -332,7 +332,7 @@ const isValidDistanceInput = (value: string, type: WorkoutType): boolean => {
 
 const isValidDistanceChange = (value: string, type: WorkoutType): boolean => {
   if (value === "") return true
-  if (allowsDecimalDistance(type)) return /^\d*\.?\d*$/.test(value)
+  if (allowsDecimalDistance(type)) return /^(\d+\.?\d*|\.\d*)$/.test(value)
   return /^\d+$/.test(value)
 }
 
@@ -346,7 +346,7 @@ export default function WorkoutSubmission() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [boatType, setBoatType] = useState<"1x" | "2x">("1x")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[] | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const workoutTypes = [
@@ -361,7 +361,7 @@ export default function WorkoutSubmission() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files && files.length > 0) {
-      setSelectedFiles(files)
+      setSelectedFiles(Array.from(files))
       // Show preview of first image
       const file = files[0]
       const reader = new FileReader()
@@ -382,7 +382,7 @@ export default function WorkoutSubmission() {
             const file = item.getAsFile()
             if (file) {
               // Set as selected file and show preview
-              setSelectedFiles({ 0: file, length: 1, item: (idx: number) => (idx === 0 ? file : undefined) } as FileList)
+              setSelectedFiles([file])
               const reader = new FileReader()
               reader.onload = (e) => {
                 setImagePreview(e.target?.result as string)
@@ -450,7 +450,7 @@ export default function WorkoutSubmission() {
 
     try {
       // Upload images to Firebase Storage (same as original)
-      const uploadPromises = Array.from(selectedFiles).map(file => {
+      const uploadPromises = selectedFiles.map(file => {
         const storageRef = ref(storage, `workout_images/${user.id}/${Date.now()}_${file.name}`)
         return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref))
       })
@@ -650,9 +650,10 @@ export default function WorkoutSubmission() {
               <div className="flex items-center gap-3">
                 <Input
                   id="distance"
-                  type="number"
-                  step="1"
-                  min={allowsDecimalDistance(selectedWorkoutType) ? "0.01" : "1"}
+                  type={allowsDecimalDistance(selectedWorkoutType) ? "text" : "number"}
+                  inputMode={allowsDecimalDistance(selectedWorkoutType) ? "decimal" : "numeric"}
+                  step={allowsDecimalDistance(selectedWorkoutType) ? undefined : "1"}
+                  min={allowsDecimalDistance(selectedWorkoutType) ? undefined : "1"}
                   placeholder={
                     selectedWorkoutType === "lift"
                       ? "e.g., 1"
