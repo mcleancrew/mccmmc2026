@@ -18,6 +18,7 @@ import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { BadgeId, UserBadgeData, BadgeProgress } from "@/lib/types"
 import { getAllBadgeIds } from "@/lib/badge-calculations"
+import { cleanBadgeDataForFirestore } from "@/lib/user-badges"
 
 export default function AdminPage() {
   const { toast } = useToast()
@@ -282,8 +283,8 @@ export default function AdminPage() {
         lastUpdated: now
       }
       
-      // Update Firestore
-      await setDoc(badgeRef, badgeData)
+      // Firestore rejects undefined; omit earnedDate when revoking
+      await setDoc(badgeRef, cleanBadgeDataForFirestore(badgeData))
       
       // Update local state
       setUserBadges(prev => ({
