@@ -4,21 +4,25 @@ import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD5v_KqCntEDZxOjbXjjXiSwdy3vnv6jrY",
-  authDomain: "lb26-mcc.firebaseapp.com",
-  projectId: "lb26-mcc",
-  storageBucket: "lb26-mcc.firebasestorage.app",
-  messagingSenderId: "949740533969",
-  appId: "1:949740533969:web:0ae1045893bb3d46a26df0",
-  measurementId: "G-JG46Y1N9YM"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
 
-// Initialize Firebase
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  throw new Error(
+    'Missing Firebase env vars. Copy .env.example to .env.local for dev, or set NEXT_PUBLIC_FIREBASE_* in Vercel.'
+  )
+}
+
 const app = initializeApp(firebaseConfig)
 
-// Initialize Firebase services
 export const auth = getAuth(app)
 export const db = getFirestore(app)
 export const storage = getStorage(app)
 
-export default app 
+export default app
