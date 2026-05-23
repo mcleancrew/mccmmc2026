@@ -12,13 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { useLeaderboardData } from "@/hooks/use-leaderboard-data"
-import { Shield, Minus, RotateCcw, Eye, EyeOff, AlertTriangle, Camera, User, Award } from "lucide-react"
+import { Shield, Eye, EyeOff, Camera, User, Award } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import { BadgeId, UserBadgeData, BadgeProgress } from "@/lib/types"
+import { BadgeId, UserBadgeData } from "@/lib/types"
 import { getAllBadgeIds } from "@/lib/badge-calculations"
 import { cleanBadgeDataForFirestore } from "@/lib/user-badges"
+import { migrateUserBadges } from "@/lib/badge-migration"
+import { AdminWorkoutList, type RowerActivity } from "@/components/admin-workout-list"
 
 export default function AdminPage() {
   const { toast } = useToast()
@@ -27,17 +29,16 @@ export default function AdminPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [selectedRower, setSelectedRower] = useState("")
-  const [metersToSubtract, setMetersToSubtract] = useState("")
-  const [meterOperation, setMeterOperation] = useState<"add" | "subtract">("subtract")
-  const [resetClickCount, setResetClickCount] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
   const [isUploadingProfile, setIsUploadingProfile] = useState(false)
   const [isManagingBadges, setIsManagingBadges] = useState(false)
   const [userBadges, setUserBadges] = useState<{ [badgeId: string]: boolean }>({})
+  const [rowerActivities, setRowerActivities] = useState<any[]>([])
+  const [rowerWorkouts, setRowerWorkouts] = useState<RowerActivity[]>([])
+  const [isLoadingWorkouts, setIsLoadingWorkouts] = useState(false)
+  const [isSavingWorkout, setIsSavingWorkout] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const ADMIN_PASSWORD = "diddyparty"
-  const RESET_CLICKS_REQUIRED = 20
 
   // Get all available badges
   const allBadges = getAllBadgeIds()
@@ -95,50 +96,118 @@ export default function AdminPage() {
     setIsAuthenticated(false)
     localStorage.removeItem("adminAuth")
     setPassword("")
-    setResetClickCount(0)
     toast({
       title: "Logged Out",
       description: "Admin session ended",
     })
   }
 
-  const handleMeterOperation = async () => {
-    if (!selectedRower || !metersToSubtract) {
-      toast({
-        title: "Missing Information",
-        description: "Please select a rower and enter meters",
-        variant: "destructive",
-      })
+  const parseActivitiesToWorkouts = (activities: any[]): RowerActivity[] =>
+    activities
+      .map((activity: any, index: number) => ({
+        arrayIndex: index,
+        activity: activity.activity || "other",
+        points: Number(activity.points) || 0,
+        date: activity.date?.toDate ? activity.date.toDate() : new Date(activity.date),
+        images: activity.images || (activity.image ? [activity.image] : []),
+        notes: activity.notes,
+        highlight: activity.highlight,
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+
+  const loadRowerWorkouts = async (userId: string) => {
+    if (!userId) {
+      setRowerActivities([])
+      setRowerWorkouts([])
       return
     }
 
-    const meters = Number.parseInt(metersToSubtract)
-    if (isNaN(meters) || meters <= 0) {
+    setIsLoadingWorkouts(true)
+    try {
+      const userRef = doc(db, "users", userId)
+      const userSnap = await getDoc(userRef)
+      if (!userSnap.exists()) {
+        setRowerActivities([])
+        setRowerWorkouts([])
+        return
+      }
+      const activities = userSnap.data().activities || []
+      setRowerActivities(activities)
+      setRowerWorkouts(parseActivitiesToWorkouts(activities))
+    } catch (error) {
+      console.error("Error loading rower workouts:", error)
       toast({
-        title: "Invalid Amount",
-        description: "Please enter a valid number of meters",
+        title: "Error",
+        description: "Failed to load workouts",
         variant: "destructive",
       })
-      return
+    } finally {
+      setIsLoadingWorkouts(false)
+    }
+  }
+
+  const saveRowerActivities = async (activities: any[]) => {
+    if (!selectedRower) return
+
+    setIsSavingWorkout(true)
+    try {
+      const userRef = doc(db, "users", selectedRower)
+      await updateDoc(userRef, { activities })
+      await migrateUserBadges(selectedRower)
+      setRowerActivities(activities)
+      setRowerWorkouts(parseActivitiesToWorkouts(activities))
+    } catch (error) {
+      console.error("Error saving workouts:", error)
+      toast({
+        title: "Error",
+        description: "Failed to save workout changes",
+        variant: "destructive",
+      })
+      throw error
+    } finally {
+      setIsSavingWorkout(false)
+    }
+  }
+
+  const handleWorkoutAdjust = async (arrayIndex: number, meters: number) => {
+    const updated = [...rowerActivities]
+    updated[arrayIndex] = { ...updated[arrayIndex], points: meters }
+    await saveRowerActivities(updated)
+    toast({ title: "Workout updated", description: `Meters set to ${new Intl.NumberFormat().format(meters)}m` })
+  }
+
+  const handleWorkoutDelete = async (arrayIndex: number) => {
+    const updated = rowerActivities.filter((_, i) => i !== arrayIndex)
+    await saveRowerActivities(updated)
+    toast({ title: "Workout deleted", description: "Workout removed from rower history" })
+  }
+
+  const handleWorkoutHighlight = async (
+    arrayIndex: number,
+    highlight: boolean,
+    reason?: string
+  ) => {
+    const updated = [...rowerActivities]
+    const activity = { ...updated[arrayIndex] }
+
+    if (highlight) {
+      activity.highlight = reason || true
+      if (reason) {
+        activity.highlightReason = reason
+      }
+    } else {
+      delete activity.highlight
+      delete activity.highlightReason
     }
 
-    setIsLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    const rowerName = leaderboardData?.find((user) => user.id === selectedRower)?.name || "Unknown"
-    const operationText = meterOperation === "add" ? "Added" : "Removed"
-
+    updated[arrayIndex] = activity
+    await saveRowerActivities(updated)
     toast({
-      title: `Meters ${meterOperation === "add" ? "Added" : "Subtracted"}`,
-      description: `${operationText} ${new Intl.NumberFormat().format(meters)}m ${meterOperation === "add" ? "to" : "from"} ${rowerName}`,
+      title: highlight ? "Workout highlighted" : "Highlight removed",
+      description: highlight
+        ? reason || "Workout is now highlighted on the team feed"
+        : "Highlight removed from workout",
     })
-
-    // Reset form
-    setSelectedRower("")
-    setMetersToSubtract("")
-    setIsLoading(false)
   }
 
   const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,8 +315,11 @@ export default function AdminPage() {
     setSelectedRower(userId)
     if (userId) {
       loadUserBadges(userId)
+      loadRowerWorkouts(userId)
     } else {
       setUserBadges({})
+      setRowerActivities([])
+      setRowerWorkouts([])
     }
   }
 
@@ -309,27 +381,6 @@ export default function AdminPage() {
       })
     } finally {
       setIsManagingBadges(false)
-    }
-  }
-
-  const handleResetClick = () => {
-    const newCount = resetClickCount + 1
-    setResetClickCount(newCount)
-
-    if (newCount === RESET_CLICKS_REQUIRED) {
-      // Reset all scores
-      toast({
-        title: "🚨 ALL SCORES RESET! 🚨",
-        description: "All rower scores have been reset to zero",
-        variant: "destructive",
-      })
-      setResetClickCount(0)
-    } else {
-      const remaining = RESET_CLICKS_REQUIRED - newCount
-      toast({
-        title: `Reset Progress: ${newCount}/${RESET_CLICKS_REQUIRED}`,
-        description: `${remaining} more clicks to reset all scores`,
-      })
     }
   }
 
@@ -417,7 +468,7 @@ export default function AdminPage() {
               <User className="h-5 w-5 text-brand" />
               Adjust Profile
             </CardTitle>
-            <CardDescription>Modify a rower's profile picture or subtract meters from their score</CardDescription>
+            <CardDescription>Modify profile, manage workouts, or adjust badges for a rower</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -439,7 +490,7 @@ export default function AdminPage() {
             <Tabs defaultValue="profile" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="profile">Profile Picture</TabsTrigger>
-                <TabsTrigger value="meters">Meters</TabsTrigger>
+                <TabsTrigger value="workouts">Workouts</TabsTrigger>
                 <TabsTrigger value="badges">Badges</TabsTrigger>
               </TabsList>
 
@@ -472,59 +523,26 @@ export default function AdminPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="meters" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Operation</Label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          value="add"
-                          checked={meterOperation === "add"}
-                          onChange={(e) => setMeterOperation(e.target.value as "add" | "subtract")}
-                          className="text-brand"
-                        />
-                        <span className="text-sm font-medium">Add Meters</span>
-                      </label>
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          value="subtract"
-                          checked={meterOperation === "subtract"}
-                          onChange={(e) => setMeterOperation(e.target.value as "add" | "subtract")}
-                          className="text-orange-600"
-                        />
-                        <span className="text-sm font-medium">Subtract Meters</span>
-                      </label>
-                    </div>
+              <TabsContent value="workouts" className="space-y-3">
+                {!selectedRower ? (
+                  <div className="py-8 text-center text-slate-500 dark:text-slate-400">
+                    <p className="text-sm">Select a rower to view and manage their workouts</p>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="meters">Meters to {meterOperation === "add" ? "Add" : "Subtract"}</Label>
-                    <Input
-                      id="meters"
-                      type="number"
-                      min="1"
-                      placeholder={`e.g., 5000`}
-                      value={metersToSubtract}
-                      onChange={(e) => setMetersToSubtract(e.target.value)}
+                ) : (
+                  <>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {rowerWorkouts.length} workout{rowerWorkouts.length === 1 ? "" : "s"} — tap image to expand
+                    </p>
+                    <AdminWorkoutList
+                      workouts={rowerWorkouts}
+                      isLoading={isLoadingWorkouts}
+                      isSaving={isSavingWorkout}
+                      onAdjust={handleWorkoutAdjust}
+                      onDelete={handleWorkoutDelete}
+                      onHighlight={handleWorkoutHighlight}
                     />
-                  </div>
-
-                  <Button
-                    onClick={handleMeterOperation}
-                    disabled={isLoading || !selectedRower || !metersToSubtract}
-                    className={cn(
-                      "w-full",
-                      meterOperation === "add" 
-                        ? "bg-green-600 hover:bg-green-700" 
-                        : "bg-orange-600 hover:bg-orange-700"
-                    )}
-                  >
-                    {isLoading ? "Processing..." : `${meterOperation === "add" ? "Add" : "Subtract"} Meters`}
-                  </Button>
-                </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="badges" className="space-y-4">
@@ -579,77 +597,6 @@ export default function AdminPage() {
                 </div>
               </TabsContent>
             </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* Reset All Scores Card */}
-        <Card className="border-red-200 dark:border-red-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
-              <AlertTriangle className="h-5 w-5" />
-              Danger Zone
-            </CardTitle>
-            <CardDescription>Irreversible actions that affect all data</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg border border-red-200 dark:border-red-800">
-              <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">Reset All Scores</h4>
-              <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                This will permanently reset all rower scores to zero. Click the button below {RESET_CLICKS_REQUIRED}{" "}
-                times to confirm.
-              </p>
-
-              <div className="flex items-center gap-4">
-                <Button
-                  onClick={handleResetClick}
-                  variant="destructive"
-                  className={cn("transition-all duration-200", resetClickCount > 0 && "animate-pulse")}
-                >
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Reset All Scores ({resetClickCount}/{RESET_CLICKS_REQUIRED})
-                </Button>
-
-                {resetClickCount > 0 && (
-                  <div className="flex-1">
-                    <div className="w-full bg-red-200 rounded-full h-2">
-                      <div
-                        className="bg-red-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${(resetClickCount / RESET_CLICKS_REQUIRED) * 100}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-red-600 mt-1">
-                      {RESET_CLICKS_REQUIRED - resetClickCount} clicks remaining
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Current Leaderboard Preview */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Leaderboard</CardTitle>
-            <CardDescription>Preview of current rower standings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {leaderboardData?.slice(0, 5).map((user, index) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm w-6">#{index + 1}</span>
-                    <span className="font-medium">{user.name}</span>
-                  </div>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    {new Intl.NumberFormat().format(user.totalMeters)}m
-                  </span>
-                </div>
-              ))}
-            </div>
           </CardContent>
         </Card>
       </div>
