@@ -1,103 +1,8 @@
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
-import { UserData, UserBadgeData, BadgeProgress } from './types'
-import { calculateAllBadges } from './badge-calculations'
-import { getCurrentDateEST, convertToEST } from './badge-calculations'
-
-// Helper function to clean badge data for Firestore (remove undefined values)
-const cleanBadgeDataForFirestore = (badgeData: UserBadgeData): any => {
-  const cleanedBadges: { [key: string]: any } = {}
-  
-  Object.entries(badgeData.badges).forEach(([badgeId, badge]) => {
-    const cleanedBadge: any = {
-      earned: badge.earned,
-      progress: badge.progress,
-      maxProgress: badge.maxProgress,
-      lastUpdated: badge.lastUpdated
-    }
-    
-    // Only include earnedDate if it's not undefined
-    if (badge.earnedDate) {
-      cleanedBadge.earnedDate = badge.earnedDate
-    }
-    
-    cleanedBadges[badgeId] = cleanedBadge
-  })
-  
-  return {
-    userId: badgeData.userId,
-    badges: cleanedBadges,
-    lastCalculated: badgeData.lastCalculated
-  }
-}
-
-// Helper function to calculate day streak from activities
-const calculateDayStreak = (activities: any[]): number => {
-  if (activities.length === 0) return 0
-
-  // Get unique dates where user worked out (converted to EST)
-  const workoutDates = new Set<string>()
-  activities.forEach((activity) => {
-    if (activity.date) {
-      let date: Date
-      if (activity.date.toDate) {
-        date = activity.date.toDate()
-      } else {
-        date = new Date(activity.date)
-      }
-      const estDate = convertToEST(date)
-      workoutDates.add(estDate.toISOString().split('T')[0]) // YYYY-MM-DD format
-    }
-  })
-
-  const sortedDates = Array.from(workoutDates)
-    .map(dateStr => new Date(dateStr + 'T00:00:00-05:00')) // Convert back to EST Date
-    .sort((a, b) => b.getTime() - a.getTime()) // Sort descending (most recent first)
-
-  if (sortedDates.length === 0) return 0
-
-  let streak = 0
-  const today = getCurrentDateEST()
-
-  // Check if user worked out today (EST)
-  const todayStr = today.toISOString().split('T')[0]
-  const hasWorkedOutToday = sortedDates.some(date => date.toISOString().split('T')[0] === todayStr)
-
-  if (hasWorkedOutToday) {
-    streak = 1
-    // Count consecutive days from today backwards
-    for (let i = 1; i < sortedDates.length; i++) {
-      const currentDate = sortedDates[i]
-      const previousDate = sortedDates[i - 1]
-      
-      const diffTime = previousDate.getTime() - currentDate.getTime()
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      
-      if (diffDays === 1) {
-        streak++
-      } else {
-        break
-      }
-    }
-  } else {
-    // Count consecutive days from most recent workout
-    for (let i = 0; i < sortedDates.length - 1; i++) {
-      const currentDate = sortedDates[i]
-      const nextDate = sortedDates[i + 1]
-      
-      const diffTime = currentDate.getTime() - nextDate.getTime()
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      
-      if (diffDays === 1) {
-        streak++
-      } else {
-        break
-      }
-    }
-  }
-
-  return streak
-}
+import { UserData, UserBadgeData } from './types'
+import { buildUserDataForBadgeCalculation, calculateAllBadges } from './badge-calculations'
+import { cleanBadgeDataForFirestore } from './user-badges'
 
 export async function migrateAllUserBadges() {
   console.log('Starting badge migration for all users...')
@@ -153,29 +58,18 @@ export async function migrateAllUserBadges() {
         }
         
         // Calculate required user data for badge calculations
-        const totalMeters = activities.reduce((sum, activity) => {
-          const points = Number(activity.points) || 0
-          return sum + points
-        }, 0)
-        
-        const dayStreak = calculateDayStreak(activities)
-        
-        // Create enhanced user data with calculated values
         const enhancedUserData: UserData = {
           ...user,
-          totalMeters,
-          dayStreak,
-          dailyMeters: 0, // Not needed for migration
-          weeklyMeters: 0, // Not needed for migration
-          deficit: Math.max(0, 1000000 - totalMeters),
-          dailyRequired: 0, // Not needed for migration
-          dailyRequiredWithRest: 0, // Not needed for migration
-          topWorkoutType: 'erg' as any, // Default value
-          workouts: [], // Not needed for migration
-          profileImage: user.profileImage || '/placeholder.png'
+          ...buildUserDataForBadgeCalculation(user.id, {
+            username: user.name,
+            profileImage: user.profileImage,
+            activities,
+          }),
         }
-        
-        console.log(`Calculated user data: totalMeters=${totalMeters}, dayStreak=${dayStreak}`)
+
+        console.log(
+          `Calculated user data: totalMeters=${enhancedUserData.totalMeters}, dayStreak=${enhancedUserData.dayStreak}`
+        )
         
         // Calculate badges for this user
         const badges = calculateAllBadges(enhancedUserData, activities)
@@ -246,26 +140,13 @@ export async function migrateUserBadges(userId: string) {
     }
     
     // Calculate required user data for badge calculations
-    const totalMeters = activities.reduce((sum, activity) => {
-      const points = Number(activity.points) || 0
-      return sum + points
-    }, 0)
-    
-    const dayStreak = calculateDayStreak(activities)
-    
-    // Create enhanced user data with calculated values
     const enhancedUserData: UserData = {
       ...userData,
-      totalMeters,
-      dayStreak,
-      dailyMeters: 0,
-      weeklyMeters: 0,
-      deficit: Math.max(0, 1000000 - totalMeters),
-      dailyRequired: 0,
-      dailyRequiredWithRest: 0,
-      topWorkoutType: 'erg' as any,
-      workouts: [],
-      profileImage: userData.profileImage || '/placeholder.png'
+      ...buildUserDataForBadgeCalculation(userId, {
+        username: userData.name,
+        profileImage: userData.profileImage,
+        activities,
+      }),
     }
     
     // Calculate badges

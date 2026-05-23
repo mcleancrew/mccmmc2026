@@ -6,7 +6,7 @@ import { db } from "@/lib/firebase"
 import { useAuth } from "@/hooks/use-auth"
 import type { UserData, Workout, WorkoutType } from "@/lib/types"
 import type { UserClass, UserGender } from "@/lib/user-profile"
-import { getCurrentDateEST, convertToEST } from "@/lib/badge-calculations"
+import { calculateDayStreak } from "@/lib/badge-calculations"
 import { getDaysLeft } from "@/lib/challenge-config"
 
 interface ProgressDataPoint {
@@ -59,77 +59,7 @@ export function useUserData(userId?: string, workoutType?: string) {
         const dailyRequiredWithRest =
           daysLeft > 0 ? Math.ceil(deficit / (daysLeft * 6 / 7)) : deficit
 
-        // Calculate workout streak
-        const calculateStreak = (activities: any[]): number => {
-          if (activities.length === 0) return 0
-
-          // Get unique dates where user worked out (converted to EST)
-          const workoutDates = new Set<string>()
-          activities.forEach((activity: any) => {
-            if (activity.date) {
-              const date = activity.date.toDate ? activity.date.toDate() : new Date(activity.date)
-              const estDate = convertToEST(date)
-              workoutDates.add(estDate.toISOString().split('T')[0]) // YYYY-MM-DD format
-            }
-          })
-
-          const sortedDates = Array.from(workoutDates)
-            .map(dateStr => new Date(dateStr + 'T00:00:00-05:00')) // Convert back to EST Date
-            .sort((a, b) => b.getTime() - a.getTime()) // Sort descending (most recent first)
-
-          if (sortedDates.length === 0) return 0
-
-          let streak = 0
-          const today = getCurrentDateEST()
-
-          // Check if user worked out today (EST)
-          const todayStr = today.toISOString().split('T')[0]
-          const hasWorkedOutToday = sortedDates.some(date => date.toISOString().split('T')[0] === todayStr)
-
-          if (hasWorkedOutToday) {
-            streak = 1
-            // Count consecutive days backwards from today
-            for (let i = 1; i <= 365; i++) { // Limit to 1 year to prevent infinite loop
-              const checkDate = new Date(today)
-              checkDate.setDate(today.getDate() - i)
-              const checkDateStr = checkDate.toISOString().split('T')[0]
-              
-              const hasWorkedOutOnDate = sortedDates.some(date => date.toISOString().split('T')[0] === checkDateStr)
-              if (hasWorkedOutOnDate) {
-                streak++
-              } else {
-                break // Streak broken
-              }
-            }
-          } else {
-            // User didn't work out today, check if they worked out yesterday
-            const yesterday = new Date(today)
-            yesterday.setDate(today.getDate() - 1)
-            const yesterdayStr = yesterday.toISOString().split('T')[0]
-            const hasWorkedOutYesterday = sortedDates.some(date => date.toISOString().split('T')[0] === yesterdayStr)
-
-            if (hasWorkedOutYesterday) {
-              streak = 1
-              // Count consecutive days backwards from yesterday
-              for (let i = 2; i <= 365; i++) {
-                const checkDate = new Date(today)
-                checkDate.setDate(today.getDate() - i)
-                const checkDateStr = checkDate.toISOString().split('T')[0]
-                
-                const hasWorkedOutOnDate = sortedDates.some(date => date.toISOString().split('T')[0] === checkDateStr)
-                if (hasWorkedOutOnDate) {
-                  streak++
-                } else {
-                  break // Streak broken
-                }
-              }
-            }
-          }
-
-          return streak
-        }
-
-        const dayStreak = calculateStreak(activities)
+        const dayStreak = calculateDayStreak(activities)
 
         // Convert activities to workout format
         const workouts: Workout[] = activities.map((activity: any, index: number) => ({

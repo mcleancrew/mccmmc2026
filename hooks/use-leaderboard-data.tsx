@@ -3,38 +3,9 @@
 import { useState, useEffect } from "react"
 import { collection, getDocs } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import { getCurrentDateEST, convertToEST } from "@/lib/badge-calculations"
+import { calculateDayStreak, normalizeActivityType } from "@/lib/badge-calculations"
 import { getDaysLeft } from "@/lib/challenge-config"
 import type { UserData } from "@/lib/types"
-
-// Helper function to normalize activity names for filtering
-const normalizeActivityName = (activityName: string): string => {
-  const normalized = activityName.toLowerCase().trim()
-  
-  // Handle OTW variations
-  if (normalized.includes("otw") || normalized.includes("on the water")) {
-    return "otw"
-  }
-  
-  // Handle other variations
-  if (normalized.includes("erg") || normalized.includes("rowing")) {
-    return "erg"
-  }
-  if (normalized.includes("run") || normalized.includes("running")) {
-    return "run"
-  }
-  if (normalized.includes("bike") || normalized.includes("cycling")) {
-    return "bike"
-  }
-  if (normalized.includes("swim") || normalized.includes("swimming")) {
-    return "swim"
-  }
-  if (normalized.includes("lift") || normalized.includes("lifting")) {
-    return "lift"
-  }
-  
-  return normalized
-}
 
 export function useLeaderboardData() {
   const [leaderboardData, setLeaderboardData] = useState<UserData[] | null>(null)
@@ -60,7 +31,7 @@ export function useLeaderboardData() {
           // Calculate meters by workout type (normalized)
           const metersByType: { [key: string]: number } = {}
           activities.forEach((activity: any) => {
-            const normalizedType = normalizeActivityName(activity.activity || "unknown")
+            const normalizedType = normalizeActivityType(activity.activity || "unknown")
             metersByType[normalizedType] = (metersByType[normalizedType] || 0) + (Number(activity.points) || 0)
           })
 
@@ -98,82 +69,12 @@ export function useLeaderboardData() {
             })
             .reduce((sum: number, activity: any) => sum + (Number(activity.points) || 0), 0)
 
-          // Calculate day streak
-          const calculateStreak = (activities: any[]): number => {
-            if (activities.length === 0) return 0
-
-            // Get unique dates where user worked out (converted to EST)
-            const workoutDates = new Set<string>()
-            activities.forEach((activity: any) => {
-              if (activity.date) {
-                const date = activity.date.toDate ? activity.date.toDate() : new Date(activity.date)
-                const estDate = convertToEST(date)
-                workoutDates.add(estDate.toISOString().split('T')[0]) // YYYY-MM-DD format
-              }
-            })
-
-            const sortedDates = Array.from(workoutDates)
-              .map(dateStr => new Date(dateStr + 'T00:00:00-05:00')) // Convert back to EST Date
-              .sort((a, b) => b.getTime() - a.getTime()) // Sort descending (most recent first)
-
-            if (sortedDates.length === 0) return 0
-
-            let streak = 0
-            const today = getCurrentDateEST()
-
-            // Check if user worked out today (EST)
-            const todayStr = today.toISOString().split('T')[0]
-            const hasWorkedOutToday = sortedDates.some(date => date.toISOString().split('T')[0] === todayStr)
-
-            if (hasWorkedOutToday) {
-              streak = 1
-              // Count consecutive days backwards from today
-              for (let i = 1; i <= 365; i++) {
-                const checkDate = new Date(today)
-                checkDate.setDate(today.getDate() - i)
-                const checkDateStr = checkDate.toISOString().split('T')[0]
-                
-                const hasWorkedOutOnDate = sortedDates.some(date => date.toISOString().split('T')[0] === checkDateStr)
-                if (hasWorkedOutOnDate) {
-                  streak++
-                } else {
-                  break // Streak broken
-                }
-              }
-            } else {
-              // User didn't work out today, check if they worked out yesterday
-              const yesterday = new Date(today)
-              yesterday.setDate(today.getDate() - 1)
-              const yesterdayStr = yesterday.toISOString().split('T')[0]
-              const hasWorkedOutYesterday = sortedDates.some(date => date.toISOString().split('T')[0] === yesterdayStr)
-
-              if (hasWorkedOutYesterday) {
-                streak = 1
-                // Count consecutive days backwards from yesterday
-                for (let i = 2; i <= 365; i++) {
-                  const checkDate = new Date(today)
-                  checkDate.setDate(today.getDate() - i)
-                  const checkDateStr = checkDate.toISOString().split('T')[0]
-                  
-                  const hasWorkedOutOnDate = sortedDates.some(date => date.toISOString().split('T')[0] === checkDateStr)
-                  if (hasWorkedOutOnDate) {
-                    streak++
-                  } else {
-                    break // Streak broken
-                  }
-                }
-              }
-            }
-
-            return streak
-          }
-
-          const dayStreak = calculateStreak(activities)
+          const dayStreak = calculateDayStreak(activities)
 
           // Determine top workout type
           const workoutTypeCounts: { [key: string]: number } = {}
           activities.forEach((activity: any) => {
-            const normalizedType = normalizeActivityName(activity.activity || "unknown")
+            const normalizedType = normalizeActivityType(activity.activity || "unknown")
             workoutTypeCounts[normalizedType] = (workoutTypeCounts[normalizedType] || 0) + 1
           })
           const topWorkoutType = Object.keys(workoutTypeCounts).reduce((a, b) => 

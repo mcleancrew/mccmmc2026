@@ -1,7 +1,13 @@
-import { doc, getDoc, setDoc } from "firebase/firestore"
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 import { db } from "./firebase"
-import { calculateAllBadges } from "./badge-calculations"
-import type { UserBadgeData, UserData } from "./types"
+import {
+  buildUserDataForBadgeCalculation,
+  calculateAllBadges,
+  findNewlyEarnedBadges,
+  getBadgeDisplayName,
+  mergeCalculatedBadges,
+} from "./badge-calculations"
+import type { BadgeProgress, UserBadgeData, UserData } from "./types"
 
 export function cleanBadgeDataForFirestore(badgeData: UserBadgeData): Record<string, unknown> {
   const cleanedBadges: { [key: string]: Record<string, unknown> } = {}
@@ -73,4 +79,79 @@ export async function ensureUserBadgeDocument(
   const initialData = createInitialBadgeData(userId, userData, activities)
   await setDoc(badgeRef, cleanBadgeDataForFirestore(initialData))
   return initialData
+}
+
+export interface NewlyEarnedBadge {
+  id: string
+  name: string
+  earnedDate?: Date
+}
+
+/** Recalculate badges from activities and persist, preserving already-earned badges. */
+export async function syncUserBadges(
+  userId: string,
+  options?: {
+    username?: string
+    profileImage?: string
+    activities?: any[]
+  }
+): Promise<NewlyEarnedBadge[]> {
+  const userRef = doc(db, "users", userId)
+  const userSnap = await getDoc(userRef)
+
+  if (!userSnap.exists()) {
+    console.error("User not found for badge update:", userId)
+    return []
+  }
+
+  const userData = userSnap.data()
+  const activities = options?.activities ?? userData.activities ?? []
+
+  const badgeUserData = buildUserDataForBadgeCalculation(userId, {
+    username: options?.username ?? userData.username,
+    profileImage: options?.profileImage ?? userData.profileImage,
+    activities,
+  })
+
+  const calculatedBadges = calculateAllBadges(badgeUserData, activities)
+
+  const badgeRef = doc(db, "badges", userId)
+  const badgeSnap = await getDoc(badgeRef)
+  const oldBadges: { [badgeId: string]: BadgeProgress } = badgeSnap.exists()
+    ? badgeSnap.data().badges || {}
+    : {}
+
+  const mergedBadges = mergeCalculatedBadges(oldBadges, calculatedBadges)
+  const newlyEarnedIds = findNewlyEarnedBadges(oldBadges, mergedBadges)
+
+  const badgeData: UserBadgeData = {
+    userId,
+    badges: mergedBadges,
+    lastCalculated: new Date(),
+  }
+
+  await updateDoc(badgeRef, cleanBadgeDataForFirestore(badgeData))
+
+  return newlyEarnedIds.map((badgeId) => ({
+    id: badgeId,
+    name: getBadgeDisplayName(badgeId),
+    earnedDate: mergedBadges[badgeId]?.earnedDate,
+  }))
+}
+
+/** Called after a workout is submitted to refresh badges and return any newly earned. */
+export async function updateUserBadgesAfterWorkout(userId: string): Promise<NewlyEarnedBadge[]> {
+  try {
+    const earned = await syncUserBadges(userId)
+    if (earned.length > 0) {
+      console.log(
+        "🎉 Newly earned badges:",
+        earned.map((b) => b.name)
+      )
+    }
+    return earned
+  } catch (error) {
+    console.error("❌ Failed to update badges:", error)
+    return []
+  }
 }

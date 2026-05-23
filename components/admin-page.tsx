@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils"
 import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { BadgeId, UserBadgeData } from "@/lib/types"
-import { getAllBadgeIds } from "@/lib/badge-calculations"
+import { BADGE_DISPLAY_NAMES, getAllBadgeIds } from "@/lib/badge-calculations"
 import { cleanBadgeDataForFirestore } from "@/lib/user-badges"
 import { migrateUserBadges } from "@/lib/badge-migration"
 import { AdminWorkoutList, type RowerActivity } from "@/components/admin-workout-list"
@@ -43,27 +43,6 @@ export default function AdminPage() {
   // Get all available badges
   const allBadges = getAllBadgeIds()
   
-  // Badge display names
-  const badgeNames: Record<BadgeId, string> = {
-    "million-meter-champion": "Million Meter Champion",
-    "100k-day": "Centurion",
-    "jack-of-all-trades": "Jack of All Trades",
-    "marathon": "Marathon",
-    "monthly-master": "Monthly Master",
-    "nates-favorite": "Nate's Favorite",
-    "gym-rat": "Gym Rat",
-    "tri": "Tri",
-    "early-bird": "Early Bird",
-    "erg-master": "Erg Master",
-    "fish": "Fish",
-    "zigzag-method": "Zigzag Method",
-    "mystery-badge": "???",
-    "just-do-track-bruh": "Just Do Track Bruh",
-    "lend-a-hand": "Lend a Hand",
-    "week-warrior": "Week Warrior",
-    "fresh-legs": "Fresh Legs"
-  }
-
   useEffect(() => {
     // Check if admin is already authenticated
     const adminAuth = localStorage.getItem("adminAuth")
@@ -369,7 +348,7 @@ export default function AdminPage() {
       
       toast({
         title: "Badge Updated",
-        description: `${badgeNames[badgeId]} badge ${action} to ${rowerName}`,
+        description: `${BADGE_DISPLAY_NAMES[badgeId]} badge ${action} to ${rowerName}`,
       })
       
     } catch (error) {
@@ -583,7 +562,7 @@ export default function AdminPage() {
                                 : "text-slate-700 dark:text-slate-300"
                             )}
                           >
-                            {badgeNames[badgeId]}
+                            {BADGE_DISPLAY_NAMES[badgeId]}
                           </Label>
                         </div>
                       ))}

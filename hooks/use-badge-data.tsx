@@ -1,127 +1,28 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore'
+import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { UserBadgeData, BadgeProgress, BadgeId } from '@/lib/types'
-import { calculateAllBadges, isNewDay, getDateKey } from '@/lib/badge-calculations'
+import { UserBadgeData } from '@/lib/types'
+import {
+  calculateAllBadges,
+  findNewlyEarnedBadges,
+  getBadgeDisplayName,
+  isNewDay,
+  mergeCalculatedBadges,
+} from '@/lib/badge-calculations'
 import { cleanBadgeDataForFirestore, ensureUserBadgeDocument } from '@/lib/user-badges'
 import { useUserData } from './use-user-data'
 import { useToast } from './use-toast'
 
-// Helper function to get activities from user data
-const getActivitiesFromUserData = (userData: any) => {
+const getActivitiesFromUserData = (userData: { activities?: unknown[]; workouts?: unknown[] }) => {
   if (userData.activities && Array.isArray(userData.activities)) {
     return userData.activities
-  } else if (userData.workouts && Array.isArray(userData.workouts)) {
+  }
+  if (userData.workouts && Array.isArray(userData.workouts)) {
     return userData.workouts
   }
   return []
-}
-
-// Helper function to normalize activity type names
-const normalizeActivityType = (activityName: string): string => {
-  if (!activityName) return 'unknown'
-  const normalized = activityName.toLowerCase().trim()
-  
-  // Handle variations
-  if (normalized.includes('otw') || normalized.includes('on the water')) {
-    return 'otw'
-  }
-  if (normalized.includes('erg') || normalized.includes('rowing')) {
-    return 'erg'
-  }
-  if (normalized.includes('run') || normalized.includes('running')) {
-    return 'run'
-  }
-  if (normalized.includes('bike') || normalized.includes('cycling')) {
-    return 'bike'
-  }
-  if (normalized.includes('swim') || normalized.includes('swimming')) {
-    return 'swim'
-  }
-  if (normalized.includes('lift') || normalized.includes('lifting')) {
-    return 'lift'
-  }
-  
-  return normalized
-}
-
-// Helper function to safely parse dates
-const safeParseDate = (dateValue: any): Date | null => {
-  if (!dateValue) return null
-  
-  try {
-    // Handle Firestore Timestamp
-    if (dateValue.toDate) {
-      return dateValue.toDate()
-    }
-    const date = new Date(dateValue)
-    return isNaN(date.getTime()) ? null : date
-  } catch {
-    return null
-  }
-}
-
-// Helper function to check if workout is before 7 AM EST
-const isBefore7AM = (activity: any): boolean => {
-  const activityDate = safeParseDate(activity.date)
-  if (!activityDate) return false
-  
-  try {
-    // Convert to EST
-    const estDate = new Date(activityDate.getTime() - (5 * 60 * 60 * 1000))
-    return estDate.getHours() < 7
-  } catch {
-    return false
-  }
-}
-
-// Function to calculate real-time badges
-const calculateRealTimeBadges = (activities: any[], userData: any): { [badgeId: string]: BadgeProgress } => {
-  const now = new Date()
-  const today = getDateKey(now)
-  
-  // Get today's activities
-  const todayActivities = activities.filter(activity => {
-    const activityDate = safeParseDate(activity.date)
-    if (!activityDate) return false
-    return getDateKey(activityDate) === today
-  })
-
-  const todayMeters = todayActivities.reduce((sum, activity) => sum + (Number(activity.points) || 0), 0)
-  const todayWorkoutTypes = new Set(todayActivities.map(activity => normalizeActivityType(activity.activity)).filter(Boolean))
-
-  return {
-    "100k-day": {
-      earned: todayMeters >= 100000,
-      earnedDate: todayMeters >= 100000 ? now : undefined,
-      progress: Math.min(todayMeters, 100000),
-      maxProgress: 100000,
-      lastUpdated: now
-    },
-    "jack-of-all-trades": {
-      earned: todayWorkoutTypes.size >= 6,
-      earnedDate: todayWorkoutTypes.size >= 6 ? now : undefined,
-      progress: Math.min(todayWorkoutTypes.size, 6),
-      maxProgress: 6,
-      lastUpdated: now
-    },
-    "tri": {
-      earned: todayMeters >= 30000,
-      earnedDate: todayMeters >= 30000 ? now : undefined,
-      progress: Math.min(todayMeters, 30000),
-      maxProgress: 30000,
-      lastUpdated: now
-    },
-    "week-warrior": {
-      earned: userData.dayStreak >= 7,
-      earnedDate: userData.dayStreak >= 7 ? now : undefined,
-      progress: Math.min(userData.dayStreak, 7),
-      maxProgress: 7,
-      lastUpdated: now
-    }
-  }
 }
 
 export function useBadgeData(userId?: string) {
@@ -137,10 +38,10 @@ export function useBadgeData(userId?: string) {
     }
 
     const badgeRef = doc(db, 'badges', userId)
-    
-    const unsubscribe = onSnapshot(badgeRef, async (doc) => {
-      if (doc.exists()) {
-        const data = doc.data() as UserBadgeData
+
+    const unsubscribe = onSnapshot(badgeRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as UserBadgeData
         setBadgeData(data)
         setLoading(false)
       } else if (userData) {
@@ -156,133 +57,59 @@ export function useBadgeData(userId?: string) {
     return () => unsubscribe()
   }, [userId, userData])
 
-  // Create badge doc once user profile data is available
   useEffect(() => {
     if (!userId || !userData || badgeData) return
     void initializeBadgeData(userId)
   }, [userId, userData, badgeData])
 
-  // Calculate and update badges when user data changes
   useEffect(() => {
     if (!userId || !userData || !badgeData) return
 
     const updateBadges = async () => {
-      const activities = getActivitiesFromUserData(userData)
-      
-      // Get lifetime badges from migration
-      const lifetimeBadges = calculateAllBadges(userData, activities)
-      
-      // Calculate real-time badges
-      const realTimeBadges = calculateRealTimeBadges(activities, userData)
-      
-      // Merge badges, preserving any already earned badges
-      const mergedBadges = { ...lifetimeBadges }
-      
-      // For all badges, if they're already earned, keep them as-is
-      Object.entries({ ...lifetimeBadges, ...realTimeBadges }).forEach(([badgeId, newBadge]) => {
-        const existingBadge = badgeData.badges[badgeId]
-        
-        if (existingBadge?.earned) {
-          // If badge is already earned, don't change it
-          mergedBadges[badgeId] = existingBadge
-        } else {
-          // If not earned, use the new calculation
-          mergedBadges[badgeId] = newBadge
-        }
-      })
-      
-      const hasNewEarnedBadges = checkForNewEarnedBadges(badgeData.badges, mergedBadges)
-      
+      const activities = getActivitiesFromUserData(userData as { activities?: unknown[]; workouts?: unknown[] })
+      const calculatedBadges = calculateAllBadges(userData, activities)
+      const mergedBadges = mergeCalculatedBadges(badgeData.badges, calculatedBadges)
+      const hasNewEarnedBadges = findNewlyEarnedBadges(badgeData.badges, mergedBadges)
+
       if (hasNewEarnedBadges.length > 0) {
-        // Show toast for each newly earned badge
-        hasNewEarnedBadges.forEach(badgeId => {
+        hasNewEarnedBadges.forEach((badgeId) => {
           const badge = mergedBadges[badgeId]
           if (badge.earnedDate) {
             toast({
-              title: "🎉 Badge Earned!",
-              description: `Congratulations! You've earned the ${getBadgeName(badgeId)} badge!`,
+              title: '🎉 Badge Earned!',
+              description: `Congratulations! You've earned the ${getBadgeDisplayName(badgeId)} badge!`,
             })
           }
         })
       }
 
-      // Create updated badge data
       const updatedBadgeData: UserBadgeData = {
         userId,
         badges: mergedBadges,
-        lastCalculated: new Date()
+        lastCalculated: new Date(),
       }
 
-      // Clean the data for Firestore
-      const cleanedData = cleanBadgeDataForFirestore(updatedBadgeData)
-
-      // Update Firestore
       const badgeRef = doc(db, 'badges', userId)
-      await setDoc(badgeRef, cleanedData, { merge: true })
+      await setDoc(badgeRef, cleanBadgeDataForFirestore(updatedBadgeData), { merge: true })
     }
 
-    // Check if we need to recalculate (new day)
-    const needsRecalculation = isNewDay(badgeData.lastCalculated)
-
-    if (needsRecalculation) {
+    if (isNewDay(badgeData.lastCalculated)) {
       updateBadges()
     }
   }, [userId, userData, badgeData, toast])
 
-  const initializeBadgeData = async (userId: string) => {
+  const initializeBadgeData = async (targetUserId: string) => {
     if (!userData) return
 
-    const activities = getActivitiesFromUserData(userData)
-    const initialData = await ensureUserBadgeDocument(userId, userData, activities)
+    const activities = getActivitiesFromUserData(userData as { activities?: unknown[]; workouts?: unknown[] })
+    const initialData = await ensureUserBadgeDocument(targetUserId, userData, activities)
     setBadgeData(initialData)
     setLoading(false)
-  }
-
-  const checkForNewEarnedBadges = (
-    oldBadges: { [badgeId: string]: BadgeProgress },
-    newBadges: { [badgeId: string]: BadgeProgress }
-  ): BadgeId[] => {
-    const newlyEarned: BadgeId[] = []
-    
-    Object.keys(newBadges).forEach(badgeId => {
-      const oldBadge = oldBadges[badgeId]
-      const newBadge = newBadges[badgeId]
-      
-      if (!oldBadge?.earned && newBadge.earned) {
-        newlyEarned.push(badgeId as BadgeId)
-      }
-    })
-    
-    return newlyEarned
-  }
-
-  const getBadgeName = (badgeId: BadgeId): string => {
-    const badgeNames: Record<BadgeId, string> = {
-      "million-meter-champion": "Million Meter Champion",
-      "100k-day": "Centurion",
-      "jack-of-all-trades": "Jack of All Trades",
-      "marathon": "Marathon",
-      "monthly-master": "Monthly Master",
-      "nates-favorite": "Nate's Favorite",
-      "gym-rat": "Gym Rat",
-      "tri": "Tri",
-      "early-bird": "Early Bird",
-      "erg-master": "Erg Master",
-      "fish": "Fish",
-      "zigzag-method": "Zigzag Method",
-      "mystery-badge": "???",
-      "just-do-track-bruh": "Just Do Track Bruh",
-      "lend-a-hand": "Lend a Hand",
-      "week-warrior": "Week Warrior",
-      "fresh-legs": "Fresh Legs"
-    }
-    
-    return badgeNames[badgeId] || badgeId
   }
 
   return {
     badgeData,
     loading,
-    badges: badgeData?.badges || {}
+    badges: badgeData?.badges || {},
   }
-} 
+}
